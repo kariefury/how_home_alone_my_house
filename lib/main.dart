@@ -423,6 +423,16 @@ Color getGradeColor(String grade) {
 }
 
 // ─────────────────────────────────────────────────
+// DEBOUNCED OBJECT – keeps recently-seen detections
+// alive for a few frames so the HUD doesn't flicker.
+// ─────────────────────────────────────────────────
+class _DebouncedObject {
+  DetectedObject object;
+  int lastSeenFrame;
+  _DebouncedObject({required this.object, required this.lastSeenFrame});
+}
+
+// ─────────────────────────────────────────────────
 // MAIN SCREEN
 // ─────────────────────────────────────────────────
 class PrankScannerHome extends StatefulWidget {
@@ -448,6 +458,12 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
 
   List<DetectedObject> _detectedObjects = [];
   List<ImageLabel> _latestLabels = [];
+
+  // ── Debounce: keep objects visible for a few frames after last detection ──
+  // Keyed by tracking ID (or synthetic ID for untracked objects).
+  final Map<int, _DebouncedObject> _debouncedObjects = {};
+  // How many frames an object survives after it stops being detected.
+  static const int _debounceGraceFrames = 10;
 
   // Actual camera frame area in pixels — captured from the first frame.
   // Used for the size-gate: objects > 25% of frame area are not pickuppable.
@@ -704,6 +720,16 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
         : 'that item on the floor';
   }
 
+  // Generate a stable-ish ID for objects without a tracking ID, based on
+  // the bounding box center quantised to a coarse grid and the primary label.
+  int _syntheticId(DetectedObject obj, int index) {
+    final cx = (obj.boundingBox.center.dx / 40).round();
+    final cy = (obj.boundingBox.center.dy / 40).round();
+    final label = obj.labels.isNotEmpty ? obj.labels.first.text.hashCode : 0;
+    // Combine into a single int unlikely to collide with real tracking IDs.
+    return 0x40000000 ^ (cx * 7919 + cy * 6271 + label);
+  }
+
   // Minimal blocklist — only items that can appear small in frame but are
   // still not pickuppable. Kept deliberately short; size does the real work.
   bool _isObviouslyFixed(String rawLabel) {
@@ -780,11 +806,32 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
 
       if (mounted) {
         setState(() {
-          _detectedObjects = objects;
+          // ── Debounce merge ─────────────────────────────────────────────
+          // Update existing entries and add new detections.
+          final seenIds = <int>{};
+          for (int i = 0; i < objects.length; i++) {
+            final obj = objects[i];
+            final id = obj.trackingId ?? _syntheticId(obj, i);
+            seenIds.add(id);
+            _debouncedObjects[id] = _DebouncedObject(
+              object: obj,
+              lastSeenFrame: _frameCount,
+            );
+          }
+          // Expire entries not seen for _debounceGraceFrames.
+          _debouncedObjects.removeWhere(
+            (id, entry) =>
+                _frameCount - entry.lastSeenFrame > _debounceGraceFrames,
+          );
+          // Build the stable list that the rest of the pipeline uses.
+          _detectedObjects = _debouncedObjects.values
+              .map((e) => e.object)
+              .toList();
+
           if (_frameCount % 8 == 0) _latestLabels = labels;
 
           // Update mission target (only when not celebrating).
-          if (!_celebrating) _updateMissionTarget(objects);
+          if (!_celebrating) _updateMissionTarget(_detectedObjects);
 
           // Cleanup bonus: each item collected permanently damps chaos boosts.
           // Using a smaller per-item value so the room doesn't clean itself
@@ -809,7 +856,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
           );
 
           // Object count → floor chaos, slightly offset by cleanup bonus.
-          final count = objects.length;
+          final count = _detectedObjects.length;
           if (count > 0) {
             final countBoost = (count * 0.025).clamp(0.0, 0.20);
             _floorCategory.level =
@@ -820,7 +867,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
           }
 
           // Object detection labels.
-          for (final obj in objects) {
+          for (final obj in _detectedObjects) {
             for (final label in obj.labels) {
               if (label.confidence < 0.30) continue;
               final l = label.text.toLowerCase();

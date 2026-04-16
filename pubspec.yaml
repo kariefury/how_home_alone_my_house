@@ -12,15 +12,13 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   camera: ^0.10.6
-  # Object Detection — gives bounding boxes + coarse labels
-  google_mlkit_object_detection: ^0.13.1
-  # Image Labeling — runs on whole frame, returns 400+ specific labels
-  # (Cat, Toy vehicle, Clutter, Furniture, etc.)
+  google_mlkit_object_detection: ^0.14.0
   google_mlkit_image_labeling: ^0.13.0
   path_provider: ^2.1.5
   path: ^1.9.1
   permission_handler: ^11.4.0
   share_plus: ^10.0.0
+  wakelock_plus: ^1.2.10       # Prevents screen from sleeping while scanning
 
 dev_dependencies:
   flutter_test:
@@ -31,10 +29,13 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
-    - assets/HowHomeAloneMyHouseWithCats.png
+    - assets/HowPrankedMyHouseWithCats.png
 
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/HowHomeAloneMyHouseWithCats.png"
+  image_path: "assets/HowPrankedMyHouseWithCats.png"
   min_sdk_android: 21
+  remove_alpha_ios: true
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/HowPrankedMyHouseWithCats.png"

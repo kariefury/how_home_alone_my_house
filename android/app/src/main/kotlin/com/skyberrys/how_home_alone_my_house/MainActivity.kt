@@ -1,4 +1,4 @@
-package com.skyberrys.how_home_alone_my_house
+package com.skyberrys.how_pranked_my_house
 
 import io.flutter.embedding.android.FlutterActivity
 

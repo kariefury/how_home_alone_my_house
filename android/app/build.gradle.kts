@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.skyberrys.how_home_alone_my_house"
+    namespace = "com.skyberrys.how_pranked_my_house"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -21,7 +21,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.skyberrys.how_home_alone_my_house"
+        applicationId = "com.skyberrys.how_pranked_my_house"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

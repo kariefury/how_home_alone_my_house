@@ -2,7 +2,7 @@
     <uses-permission android:name="android.permission.CAMERA" />
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <application
-        android:label="how_home_alone_my_house"
+        android:label="how_pranked_my_house"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
         <activity

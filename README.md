@@ -1,4 +1,4 @@
-# how_home_alone_my_house
+# how_pranked_my_house
 
 A new Flutter project.
 

@@ -15,7 +15,12 @@ late List<CameraDescription> _cameras;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  _cameras = await availableCameras();
+  try {
+    _cameras = await availableCameras();
+  } catch (e) {
+    debugPrint('Failed to get cameras: $e');
+    _cameras = [];
+  }
   runApp(const HowPrankedApp());
 }
 
@@ -44,11 +49,12 @@ class PrankCategory {
   final String name;
   final Color color;
   double level;
-  PrankCategory(
-      {required this.emoji,
-      required this.name,
-      required this.color,
-      this.level = 0.1});
+  PrankCategory({
+    required this.emoji,
+    required this.name,
+    required this.color,
+    this.level = 0.1,
+  });
 }
 
 // ─────────────────────────────────────────────────
@@ -68,31 +74,34 @@ double floorBoost(String l) {
   if (l.contains('lego') || l.contains('duplo')) return 0.20;
   if (l.contains('toy vehicle') ||
       l.contains('toy car') ||
-      l.contains('toy truck')) return 0.20;
+      l.contains('toy truck'))
+    return 0.20;
   if (l.contains('toy') || l.contains('doll') || l.contains('action figure'))
     return 0.15;
   if (l.contains('figurine') || l.contains('miniature')) return 0.12;
   if (l.contains('ball') || l.contains('balloon')) return 0.15;
-  if (l.contains('puzzle') ||
-      l.contains('board game') ||
-      l.contains('game')) return 0.12;
+  if (l.contains('puzzle') || l.contains('board game') || l.contains('game'))
+    return 0.12;
   if (l.contains('vehicle') ||
       l.contains('truck') ||
       l.contains('car') ||
       l.contains('crane') ||
       l.contains('construction') ||
-      l.contains('excavator')) return 0.15;
+      l.contains('excavator'))
+    return 0.15;
   if (l.contains('train') ||
       l.contains('locomotive') ||
       l.contains('aircraft') ||
       l.contains('boat') ||
-      l.contains('ship')) return 0.12;
+      l.contains('ship'))
+    return 0.12;
   if (l.contains('shoe') ||
       l.contains('boot') ||
       l.contains('sneaker') ||
       l.contains('footwear') ||
       l.contains('sandal') ||
-      l.contains('slipper')) return 0.15;
+      l.contains('slipper'))
+    return 0.15;
   if (l.contains('clutter') || l.contains('mess') || l.contains('disorder'))
     return 0.18;
   if (l.contains('box') || l.contains('package') || l.contains('carton'))
@@ -100,12 +109,12 @@ double floorBoost(String l) {
   if (l.contains('bag') ||
       l.contains('backpack') ||
       l.contains('suitcase') ||
-      l.contains('luggage')) return 0.12;
+      l.contains('luggage'))
+    return 0.12;
   if (l.contains('book') || l.contains('paper') || l.contains('magazine'))
     return 0.08;
-  if (l.contains('sporting') ||
-      l.contains('sport') ||
-      l.contains('equipment')) return 0.10;
+  if (l.contains('sporting') || l.contains('sport') || l.contains('equipment'))
+    return 0.10;
   if (l.contains('clothing') ||
       l.contains('laundry') ||
       l.contains('garment') ||
@@ -122,42 +131,44 @@ double floorBoost(String l) {
       l.contains('hat') ||
       l.contains('cap') ||
       l.contains('glove') ||
-      l.contains('scarf')) return 0.12;
+      l.contains('scarf'))
+    return 0.12;
   // Soft furnishings on the floor — very common child mess
   if (l.contains('blanket') ||
       l.contains('quilt') ||
       l.contains('duvet') ||
       l.contains('comforter') ||
-      l.contains('throw')) return 0.18;
-  if (l.contains('pillow') ||
-      l.contains('cushion') ||
-      l.contains('bolster')) return 0.16;
+      l.contains('throw'))
+    return 0.18;
+  if (l.contains('pillow') || l.contains('cushion') || l.contains('bolster'))
+    return 0.16;
   // Stuffed animals / soft toys
   if (l.contains('stuffed') ||
       l.contains('plush') ||
       l.contains('teddy') ||
       l.contains('soft toy') ||
-      l.contains('cuddly')) return 0.18;
+      l.contains('cuddly'))
+    return 0.18;
   // Other common floor clutter
-  if (l.contains('towel') || l.contains('rag'))
-    return 0.14;
+  if (l.contains('towel') || l.contains('rag')) return 0.14;
   if (l.contains('remote') ||
       l.contains('controller') ||
       l.contains('gamepad') ||
-      l.contains('joystick')) return 0.14;
+      l.contains('joystick'))
+    return 0.14;
   if (l.contains('pencil') ||
       l.contains('pen') ||
       l.contains('crayon') ||
       l.contains('marker') ||
-      l.contains('ruler')) return 0.14;
+      l.contains('ruler'))
+    return 0.14;
   if (l.contains('block') || l.contains('brick')) return 0.18;
   if (l.contains('rope') || l.contains('string') || l.contains('cord'))
     return 0.10;
   if (l.contains('bottle') && l.contains('water')) return 0.14;
   if (l.contains('tool') || l.contains('hardware')) return 0.10;
-  if (l.contains('household') ||
-      l.contains('goods') ||
-      l.contains('object')) return 0.06;
+  if (l.contains('household') || l.contains('goods') || l.contains('object'))
+    return 0.06;
   return 0.0;
 }
 
@@ -169,14 +180,16 @@ double splashBoost(String l) {
       l.contains('tumbler') ||
       l.contains('tupperware') ||
       l.contains('container') ||
-      l.contains('food storage')) return 0.18;
+      l.contains('food storage'))
+    return 0.18;
   if (l.contains('bowl') || l.contains('bucket') || l.contains('jug'))
     return 0.15;
   if (l.contains('liquid') ||
       l.contains('drink') ||
       l.contains('beverage') ||
       l.contains('juice') ||
-      l.contains('water')) return 0.12;
+      l.contains('water'))
+    return 0.12;
   if (l.contains('spray') || l.contains('squirt') || l.contains('hose'))
     return 0.15;
   if (l.contains('sink') || l.contains('bathtub') || l.contains('toilet'))
@@ -186,7 +199,8 @@ double splashBoost(String l) {
       l.contains('banana') ||
       l.contains('orange') ||
       l.contains('apple') ||
-      l.contains('snack')) return 0.12;
+      l.contains('snack'))
+    return 0.12;
   return 0.0;
 }
 
@@ -196,7 +210,8 @@ double furnitureBoost(String l) {
       l.contains('couch') ||
       l.contains('armchair') ||
       l.contains('stool') ||
-      l.contains('bench')) return 0.15;
+      l.contains('bench'))
+    return 0.15;
   if (l.contains('table') || l.contains('desk') || l.contains('counter'))
     return 0.15;
   if (l.contains('shelf') ||
@@ -204,7 +219,8 @@ double furnitureBoost(String l) {
       l.contains('bookshelf') ||
       l.contains('cabinet') ||
       l.contains('wardrobe') ||
-      l.contains('dresser')) return 0.12;
+      l.contains('dresser'))
+    return 0.12;
   if (l.contains('furniture') || l.contains('rack') || l.contains('stand'))
     return 0.10;
   if (l.contains('bed') || l.contains('mattress')) return 0.08;
@@ -219,42 +235,65 @@ String getMissionLabel(String rawLabel) {
     return 'those LEGO bricks';
   if (l.contains('toy vehicle') ||
       l.contains('toy car') ||
-      l.contains('toy truck')) return 'that toy car';
+      l.contains('toy truck'))
+    return 'that toy car';
   if (l.contains('stuffed') ||
       l.contains('plush') ||
       l.contains('teddy') ||
-      l.contains('cuddly')) return 'that stuffed animal';
+      l.contains('cuddly'))
+    return 'that stuffed animal';
   if (l.contains('toy') || l.contains('doll') || l.contains('figurine'))
     return 'that toy';
   if (l.contains('ball')) return 'that ball';
-  if (l.contains('blanket') || l.contains('quilt') ||
-      l.contains('duvet') || l.contains('comforter') ||
-      l.contains('throw')) return 'that blanket';
-  if (l.contains('pillow') || l.contains('cushion') ||
-      l.contains('bolster')) return 'that pillow';
+  if (l.contains('blanket') ||
+      l.contains('quilt') ||
+      l.contains('duvet') ||
+      l.contains('comforter') ||
+      l.contains('throw'))
+    return 'that blanket';
+  if (l.contains('pillow') || l.contains('cushion') || l.contains('bolster'))
+    return 'that pillow';
   if (l.contains('towel')) return 'that towel';
-  if (l.contains('shoe') || l.contains('boot') || l.contains('footwear') ||
-      l.contains('sneaker') || l.contains('slipper')) return 'those shoes';
+  if (l.contains('shoe') ||
+      l.contains('boot') ||
+      l.contains('footwear') ||
+      l.contains('sneaker') ||
+      l.contains('slipper'))
+    return 'those shoes';
   if (l.contains('sock')) return 'those socks';
-  if (l.contains('clothing') || l.contains('cloth') ||
-      l.contains('laundry') || l.contains('shirt') ||
-      l.contains('pants') || l.contains('jacket') ||
-      l.contains('hoodie') || l.contains('pyjama') ||
-      l.contains('pajama')) return 'those clothes';
+  if (l.contains('clothing') ||
+      l.contains('cloth') ||
+      l.contains('laundry') ||
+      l.contains('shirt') ||
+      l.contains('pants') ||
+      l.contains('jacket') ||
+      l.contains('hoodie') ||
+      l.contains('pyjama') ||
+      l.contains('pajama'))
+    return 'those clothes';
   if (l.contains('hat') || l.contains('cap')) return 'that hat';
   if (l.contains('book') || l.contains('magazine')) return 'that book';
   if (l.contains('paper')) return 'that paper';
-  if (l.contains('pencil') || l.contains('pen') ||
-      l.contains('crayon') || l.contains('marker')) return 'those pencils';
-  if (l.contains('remote') || l.contains('controller') ||
-      l.contains('gamepad')) return 'that remote control';
-  if (l.contains('bottle') || l.contains('cup') ||
-      l.contains('mug') || l.contains('glass')) return 'that cup';
+  if (l.contains('pencil') ||
+      l.contains('pen') ||
+      l.contains('crayon') ||
+      l.contains('marker'))
+    return 'those pencils';
+  if (l.contains('remote') || l.contains('controller') || l.contains('gamepad'))
+    return 'that remote control';
+  if (l.contains('bottle') ||
+      l.contains('cup') ||
+      l.contains('mug') ||
+      l.contains('glass'))
+    return 'that cup';
   if (l.contains('bowl')) return 'that bowl';
   if (l.contains('box') || l.contains('package')) return 'that box';
   if (l.contains('bag') || l.contains('backpack')) return 'that bag';
-  if (l.contains('vehicle') || l.contains('truck') ||
-      l.contains('car') || l.contains('train')) return 'that toy vehicle';
+  if (l.contains('vehicle') ||
+      l.contains('truck') ||
+      l.contains('car') ||
+      l.contains('train'))
+    return 'that toy vehicle';
   return rawLabel.isNotEmpty ? 'that ${rawLabel.toLowerCase()}' : 'that item';
 }
 
@@ -266,7 +305,8 @@ String getPrankLabel(String rawLabel) {
     return '🧱 LEGO MINEFIELD';
   if (l.contains('toy vehicle') ||
       l.contains('toy car') ||
-      l.contains('toy truck')) return '🚗 WHEELED MENACE';
+      l.contains('toy truck'))
+    return '🚗 WHEELED MENACE';
   if (l.contains('toy') || l.contains('doll') || l.contains('figurine'))
     return '🪀 TOY TRAP';
   if (l.contains('ball')) return '⚽ ANKLE BREAKER';
@@ -277,7 +317,8 @@ String getPrankLabel(String rawLabel) {
   if (l.contains('vehicle') ||
       l.contains('truck') ||
       l.contains('car') ||
-      l.contains('crane')) return '🚗 WHEELED MENACE';
+      l.contains('crane'))
+    return '🚗 WHEELED MENACE';
   if (l.contains('clutter') || l.contains('mess')) return '⚠️ CHAOS DETECTED';
   if (l.contains('box') || l.contains('package')) return '📦 STUBBED TOE BAIT';
   if (l.contains('bottle') || l.contains('cup') || l.contains('glass'))
@@ -294,7 +335,11 @@ String getPrankLabel(String rawLabel) {
 // VERDICT & GRADE
 // ─────────────────────────────────────────────────
 String getChaosVerdict(
-    double feline, double floor, double splash, double furniture) {
+  double feline,
+  double floor,
+  double splash,
+  double furniture,
+) {
   final total = (feline + floor + splash + furniture) / 4.0;
   final hasCat = feline > 0.45;
   final hasFloor = floor > 0.45;
@@ -378,6 +423,16 @@ Color getGradeColor(String grade) {
 }
 
 // ─────────────────────────────────────────────────
+// DEBOUNCED OBJECT – keeps recently-seen detections
+// alive for a few frames so the HUD doesn't flicker.
+// ─────────────────────────────────────────────────
+class _DebouncedObject {
+  DetectedObject object;
+  int lastSeenFrame;
+  _DebouncedObject({required this.object, required this.lastSeenFrame});
+}
+
+// ─────────────────────────────────────────────────
 // MAIN SCREEN
 // ─────────────────────────────────────────────────
 class PrankScannerHome extends StatefulWidget {
@@ -404,9 +459,16 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
   List<DetectedObject> _detectedObjects = [];
   List<ImageLabel> _latestLabels = [];
 
+  // ── Debounce: keep objects visible for a few frames after last detection ──
+  // Keyed by tracking ID (or synthetic ID for untracked objects).
+  final Map<int, _DebouncedObject> _debouncedObjects = {};
+  // How many frames an object survives after it stops being detected.
+  static const int _debounceGraceFrames = 10;
+
   // Actual camera frame area in pixels — captured from the first frame.
   // Used for the size-gate: objects > 25% of frame area are not pickuppable.
-  double _frameArea = 640.0 * 480.0; // sensible default, overwritten on first frame
+  double _frameArea =
+      640.0 * 480.0; // sensible default, overwritten on first frame
 
   // ── Cleanup tracking ──────────────────────────────
   int _itemsCollected = 0;
@@ -414,7 +476,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
   // Current mission: the object we're asking the kid to pick up.
   // Identified by trackingId (or negative list-index if trackingId is null).
   int? _targetId;
-  String? _targetRawLabel;      // ML Kit label text (for re-matching)
+  String? _targetRawLabel; // ML Kit label text (for re-matching)
   String? _missionFriendlyLabel; // Kid-friendly display
 
   bool _celebrating = false;
@@ -434,21 +496,25 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
   ];
 
   final PrankCategory _felineCategory = PrankCategory(
-      emoji: '🐱',
-      name: 'FELINE AGENTS',
-      color: const Color(0xFFFF6B35));
+    emoji: '🐱',
+    name: 'FELINE AGENTS',
+    color: const Color(0xFFFF6B35),
+  );
   final PrankCategory _floorCategory = PrankCategory(
-      emoji: '🧱',
-      name: 'FLOOR TRAPS',
-      color: const Color(0xFFFF3366));
+    emoji: '🧱',
+    name: 'FLOOR TRAPS',
+    color: const Color(0xFFFF3366),
+  );
   final PrankCategory _splashCategory = PrankCategory(
-      emoji: '💦',
-      name: 'SPLASH ZONES',
-      color: const Color(0xFF00CFFF));
+    emoji: '💦',
+    name: 'SPLASH ZONES',
+    color: const Color(0xFF00CFFF),
+  );
   final PrankCategory _furnitureCategory = PrankCategory(
-      emoji: '🪑',
-      name: 'SHIN DESTROYERS',
-      color: const Color(0xFFFFD700));
+    emoji: '🪑',
+    name: 'SHIN DESTROYERS',
+    color: const Color(0xFFFFD700),
+  );
 
   bool _isSaving = false;
   bool _showDebugLabels = false;
@@ -460,18 +526,27 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     _initCamera();
     _initDetectors();
 
-    _scanController =
-        AnimationController(duration: const Duration(seconds: 2), vsync: this)
-          ..repeat(reverse: true);
-    _scanAnimation =
-        Tween<double>(begin: 0.05, end: 0.95).animate(_scanController);
+    _scanController = AnimationController(
+      duration: const Duration(seconds: 2),
+      vsync: this,
+    )..repeat(reverse: true);
+    _scanAnimation = Tween<double>(
+      begin: 0.05,
+      end: 0.95,
+    ).animate(_scanController);
   }
 
   // ── Camera ────────────────────────────────────────
   Future<void> _initCamera() async {
+    if (_cameras.isEmpty) {
+      debugPrint('No cameras available');
+      return;
+    }
     _cameraController = CameraController(
-        _cameras[0], ResolutionPreset.medium,
-        enableAudio: false);
+      _cameras[0],
+      ResolutionPreset.medium,
+      enableAudio: false,
+    );
     try {
       await _cameraController.initialize();
       if (!mounted) return;
@@ -516,11 +591,12 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
   // ── Detectors ─────────────────────────────────────
   void _initDetectors() {
     _objectDetector = ObjectDetector(
-        options: ObjectDetectorOptions(
-      mode: DetectionMode.stream,
-      classifyObjects: true,
-      multipleObjects: true,
-    ));
+      options: ObjectDetectorOptions(
+        mode: DetectionMode.stream,
+        classifyObjects: true,
+        multipleObjects: true,
+      ),
+    );
     _imageLabeler = ImageLabeler(
       options: ImageLabelerOptions(confidenceThreshold: 0.40),
     );
@@ -565,8 +641,11 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
       if (byId.isNotEmpty) return;
 
       if (_targetRawLabel != null) {
-        final byLabel = objects.where((o) => o.labels.any(
-            (lbl) => lbl.text == _targetRawLabel && lbl.confidence > 0.25));
+        final byLabel = objects.where(
+          (o) => o.labels.any(
+            (lbl) => lbl.text == _targetRawLabel && lbl.confidence > 0.25,
+          ),
+        );
         if (byLabel.isNotEmpty) {
           final matched = byLabel.first;
           _targetId = matched.trackingId ?? -(objects.indexOf(matched) + 1);
@@ -595,8 +674,9 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     // ── STEP 2: Minimal blocklist veto ────────────────────────────────────
     // Only used for the small set of things that can look "small" in frame
     // (e.g. camera very close to a shelf) but are still not pickuppable.
-    final candidates = sizeFiltered.where((o) =>
-        !o.labels.any((lbl) => _isObviouslyFixed(lbl.text))).toList();
+    final candidates = sizeFiltered
+        .where((o) => !o.labels.any((lbl) => _isObviouslyFixed(lbl.text)))
+        .toList();
 
     // If the blocklist removed everything, fall back to size-only list.
     final pool = candidates.isNotEmpty ? candidates : sizeFiltered;
@@ -640,16 +720,40 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
         : 'that item on the floor';
   }
 
+  // Generate a stable-ish ID for objects without a tracking ID, based on
+  // the bounding box center quantised to a coarse grid and the primary label.
+  int _syntheticId(DetectedObject obj, int index) {
+    final cx = (obj.boundingBox.center.dx / 40).round();
+    final cy = (obj.boundingBox.center.dy / 40).round();
+    final label = obj.labels.isNotEmpty ? obj.labels.first.text.hashCode : 0;
+    // Combine into a single int unlikely to collide with real tracking IDs.
+    return 0x40000000 ^ (cx * 7919 + cy * 6271 + label);
+  }
+
   // Minimal blocklist — only items that can appear small in frame but are
   // still not pickuppable. Kept deliberately short; size does the real work.
   bool _isObviouslyFixed(String rawLabel) {
     final l = rawLabel.toLowerCase();
     const fixed = [
-      'wall', 'ceiling', 'floor', 'flooring', 'tile', 'door', 'window',
-      'shelf', 'bookcase', 'bookshelf',
-      'person', 'human', 'face',
-      'television', 'monitor', 'screen',
-      'room', 'interior', 'building',
+      'wall',
+      'ceiling',
+      'floor',
+      'flooring',
+      'tile',
+      'door',
+      'window',
+      'shelf',
+      'bookcase',
+      'bookshelf',
+      'person',
+      'human',
+      'face',
+      'television',
+      'monitor',
+      'screen',
+      'room',
+      'interior',
+      'building',
     ];
     return fixed.any((f) => l.contains(f));
   }
@@ -661,11 +765,20 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     _frameCount++;
 
     try {
-      final WriteBuffer allBytes = WriteBuffer();
-      for (final Plane plane in image.planes) {
-        allBytes.putUint8List(plane.bytes);
+      // iOS outputs bgra8888 (single plane); Android outputs nv21 (multi-plane).
+      final Uint8List bytes;
+      final InputImageFormat format;
+      if (Platform.isIOS) {
+        bytes = image.planes[0].bytes;
+        format = InputImageFormat.bgra8888;
+      } else {
+        final WriteBuffer allBytes = WriteBuffer();
+        for (final Plane plane in image.planes) {
+          allBytes.putUint8List(plane.bytes);
+        }
+        bytes = allBytes.done().buffer.asUint8List();
+        format = InputImageFormat.nv21;
       }
-      final bytes = allBytes.done().buffer.asUint8List();
 
       // Capture real frame area once (ML Kit bounding boxes are in this space).
       _frameArea = image.width.toDouble() * image.height.toDouble();
@@ -675,7 +788,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
         metadata: InputImageMetadata(
           size: Size(image.width.toDouble(), image.height.toDouble()),
           rotation: InputImageRotation.rotation90deg,
-          format: InputImageFormat.nv21,
+          format: format,
           bytesPerRow: image.planes[0].bytesPerRow,
         ),
       );
@@ -693,62 +806,92 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
 
       if (mounted) {
         setState(() {
-          _detectedObjects = objects;
+          // ── Debounce merge ─────────────────────────────────────────────
+          // Update existing entries and add new detections.
+          final seenIds = <int>{};
+          for (int i = 0; i < objects.length; i++) {
+            final obj = objects[i];
+            final id = obj.trackingId ?? _syntheticId(obj, i);
+            seenIds.add(id);
+            _debouncedObjects[id] = _DebouncedObject(
+              object: obj,
+              lastSeenFrame: _frameCount,
+            );
+          }
+          // Expire entries not seen for _debounceGraceFrames.
+          _debouncedObjects.removeWhere(
+            (id, entry) =>
+                _frameCount - entry.lastSeenFrame > _debounceGraceFrames,
+          );
+          // Build the stable list that the rest of the pipeline uses.
+          _detectedObjects = _debouncedObjects.values
+              .map((e) => e.object)
+              .toList();
+
           if (_frameCount % 8 == 0) _latestLabels = labels;
 
           // Update mission target (only when not celebrating).
-          if (!_celebrating) _updateMissionTarget(objects);
+          if (!_celebrating) _updateMissionTarget(_detectedObjects);
 
           // Cleanup bonus: each item collected permanently damps chaos boosts.
           // Using a smaller per-item value so the room doesn't clean itself
           // too fast — 20 items needed for maximum relief (~0.30 cap).
-          final cleanupBonus =
-              (_itemsCollected * 0.015).clamp(0.0, 0.30);
+          final cleanupBonus = (_itemsCollected * 0.015).clamp(0.0, 0.30);
 
           // Passive decay is very slow — the room should stay messy unless
           // the child is actively picking things up.
           const decay = 0.0005;
-          _felineCategory.level =
-              (_felineCategory.level - decay).clamp(0.1, 1.0);
-          _floorCategory.level =
-              (_floorCategory.level - decay).clamp(0.1, 1.0);
-          _splashCategory.level =
-              (_splashCategory.level - decay).clamp(0.1, 1.0);
-          _furnitureCategory.level =
-              (_furnitureCategory.level - decay).clamp(0.1, 1.0);
+          _felineCategory.level = (_felineCategory.level - decay).clamp(
+            0.1,
+            1.0,
+          );
+          _floorCategory.level = (_floorCategory.level - decay).clamp(0.1, 1.0);
+          _splashCategory.level = (_splashCategory.level - decay).clamp(
+            0.1,
+            1.0,
+          );
+          _furnitureCategory.level = (_furnitureCategory.level - decay).clamp(
+            0.1,
+            1.0,
+          );
 
           // Object count → floor chaos, slightly offset by cleanup bonus.
-          final count = objects.length;
+          final count = _detectedObjects.length;
           if (count > 0) {
             final countBoost = (count * 0.025).clamp(0.0, 0.20);
-            _floorCategory.level = (_floorCategory.level +
-                    countBoost -
-                    cleanupBonus * 0.15)
-                .clamp(0.1, 1.0);
+            _floorCategory.level =
+                (_floorCategory.level + countBoost - cleanupBonus * 0.15).clamp(
+                  0.1,
+                  1.0,
+                );
           }
 
           // Object detection labels.
-          for (final obj in objects) {
+          for (final obj in _detectedObjects) {
             for (final label in obj.labels) {
               if (label.confidence < 0.30) continue;
               final l = label.text.toLowerCase();
               final w = label.confidence;
-              _felineCategory.level = (_felineCategory.level +
-                      felineBoost(l) * w -
-                      cleanupBonus * 0.03)
-                  .clamp(0.1, 1.0);
-              _floorCategory.level = (_floorCategory.level +
-                      floorBoost(l) * w -
-                      cleanupBonus * 0.03)
-                  .clamp(0.1, 1.0);
-              _splashCategory.level = (_splashCategory.level +
-                      splashBoost(l) * w -
-                      cleanupBonus * 0.03)
-                  .clamp(0.1, 1.0);
-              _furnitureCategory.level = (_furnitureCategory.level +
-                      furnitureBoost(l) * w -
-                      cleanupBonus * 0.03)
-                  .clamp(0.1, 1.0);
+              _felineCategory.level =
+                  (_felineCategory.level +
+                          felineBoost(l) * w -
+                          cleanupBonus * 0.03)
+                      .clamp(0.1, 1.0);
+              _floorCategory.level =
+                  (_floorCategory.level +
+                          floorBoost(l) * w -
+                          cleanupBonus * 0.03)
+                      .clamp(0.1, 1.0);
+              _splashCategory.level =
+                  (_splashCategory.level +
+                          splashBoost(l) * w -
+                          cleanupBonus * 0.03)
+                      .clamp(0.1, 1.0);
+              _furnitureCategory.level =
+                  (_furnitureCategory.level +
+                          furnitureBoost(l) * w -
+                          cleanupBonus * 0.03)
+                      .clamp(0.1, 1.0);
             }
           }
 
@@ -758,22 +901,26 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
               if (label.confidence < 0.40) continue;
               final l = label.label.toLowerCase();
               final w = label.confidence;
-              _felineCategory.level = (_felineCategory.level +
-                      felineBoost(l) * w * 1.5 -
-                      cleanupBonus * 0.05)
-                  .clamp(0.1, 1.0);
-              _floorCategory.level = (_floorCategory.level +
-                      floorBoost(l) * w * 1.5 -
-                      cleanupBonus * 0.05)
-                  .clamp(0.1, 1.0);
-              _splashCategory.level = (_splashCategory.level +
-                      splashBoost(l) * w * 1.5 -
-                      cleanupBonus * 0.05)
-                  .clamp(0.1, 1.0);
-              _furnitureCategory.level = (_furnitureCategory.level +
-                      furnitureBoost(l) * w * 1.5 -
-                      cleanupBonus * 0.05)
-                  .clamp(0.1, 1.0);
+              _felineCategory.level =
+                  (_felineCategory.level +
+                          felineBoost(l) * w * 1.5 -
+                          cleanupBonus * 0.05)
+                      .clamp(0.1, 1.0);
+              _floorCategory.level =
+                  (_floorCategory.level +
+                          floorBoost(l) * w * 1.5 -
+                          cleanupBonus * 0.05)
+                      .clamp(0.1, 1.0);
+              _splashCategory.level =
+                  (_splashCategory.level +
+                          splashBoost(l) * w * 1.5 -
+                          cleanupBonus * 0.05)
+                      .clamp(0.1, 1.0);
+              _furnitureCategory.level =
+                  (_furnitureCategory.level +
+                          furnitureBoost(l) * w * 1.5 -
+                          cleanupBonus * 0.05)
+                      .clamp(0.1, 1.0);
             }
           }
         });
@@ -796,14 +943,17 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
       // Immediate chaos reduction on pickup — kept modest so the bars
       // don't crater instantly. The real benefit builds up via cleanupBonus.
       const reduction = 0.06;
-      _floorCategory.level =
-          (_floorCategory.level - reduction).clamp(0.1, 1.0);
-      _felineCategory.level =
-          (_felineCategory.level - reduction * 0.4).clamp(0.1, 1.0);
-      _splashCategory.level =
-          (_splashCategory.level - reduction * 0.4).clamp(0.1, 1.0);
-      _furnitureCategory.level =
-          (_furnitureCategory.level - reduction * 0.4).clamp(0.1, 1.0);
+      _floorCategory.level = (_floorCategory.level - reduction).clamp(0.1, 1.0);
+      _felineCategory.level = (_felineCategory.level - reduction * 0.4).clamp(
+        0.1,
+        1.0,
+      );
+      _splashCategory.level = (_splashCategory.level - reduction * 0.4).clamp(
+        0.1,
+        1.0,
+      );
+      _furnitureCategory.level = (_furnitureCategory.level - reduction * 0.4)
+          .clamp(0.1, 1.0);
 
       // Clear mission so a new one is selected after celebration.
       _targetId = null;
@@ -827,16 +977,19 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
   Future<void> _captureAndShare() async {
     setState(() => _isSaving = true);
     try {
-      final boundary = _captureKey.currentContext
-          ?.findRenderObject() as RenderRepaintBoundary?;
+      final boundary =
+          _captureKey.currentContext?.findRenderObject()
+              as RenderRepaintBoundary?;
       if (boundary == null) return;
       final ui.Image img = await boundary.toImage(pixelRatio: 2.0);
-      final ByteData? byteData =
-          await img.toByteData(format: ui.ImageByteFormat.png);
+      final ByteData? byteData = await img.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
       if (byteData == null) return;
       final tempDir = await getTemporaryDirectory();
       final file = File(
-          '${tempDir.path}/prank_scan_${DateTime.now().millisecondsSinceEpoch}.png');
+        '${tempDir.path}/prank_scan_${DateTime.now().millisecondsSinceEpoch}.png',
+      );
       await file.writeAsBytes(byteData.buffer.asUint8List());
       await Share.shareXFiles(
         [XFile(file.path)],
@@ -862,8 +1015,10 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
             children: [
               CircularProgressIndicator(color: Color(0xFFADFF2F)),
               SizedBox(height: 16),
-              Text('INITIALIZING PRANK DETECTOR...',
-                  style: TextStyle(color: Color(0xFFADFF2F))),
+              Text(
+                'INITIALIZING PRANK DETECTOR...',
+                style: TextStyle(color: Color(0xFFADFF2F)),
+              ),
             ],
           ),
         ),
@@ -909,7 +1064,9 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
 
                 // Top gradient
                 Positioned(
-                  top: 0, left: 0, right: 0,
+                  top: 0,
+                  left: 0,
+                  right: 0,
                   child: Container(
                     height: 170,
                     decoration: const BoxDecoration(
@@ -924,7 +1081,9 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
 
                 // Bottom gradient
                 Positioned(
-                  bottom: 0, left: 0, right: 0,
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
                   child: Container(
                     height: 310,
                     decoration: const BoxDecoration(
@@ -946,21 +1105,26 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      GestureDetector(
-                        onDoubleTap: () => setState(
-                            () => _showDebugLabels = !_showDebugLabels),
-                        child: const Text(
-                          '🏠 HOW PRANKED MY HOUSE',
-                          style: TextStyle(
-                            color: Color(0xFFADFF2F),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1.2,
-                            shadows: [
-                              Shadow(
+                      Flexible(
+                        child: GestureDetector(
+                          onDoubleTap: () => setState(
+                            () => _showDebugLabels = !_showDebugLabels,
+                          ),
+                          child: const Text(
+                            '🏠 HOW PRANKED MY HOUSE',
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              color: Color(0xFFADFF2F),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: 1.2,
+                              shadows: [
+                                Shadow(
                                   blurRadius: 12,
-                                  color: Color(0xFFADFF2F))
-                            ],
+                                  color: Color(0xFFADFF2F),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -979,9 +1143,8 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                     child: _celebrating
                         ? _buildCelebrationPanel(key: const ValueKey('cel'))
                         : hasMission
-                            ? _buildMissionPanel(key: const ValueKey('mis'))
-                            : const SizedBox.shrink(
-                                key: ValueKey('empty')),
+                        ? _buildMissionPanel(key: const ValueKey('mis'))
+                        : const SizedBox.shrink(key: ValueKey('empty')),
                   ),
                 ),
 
@@ -995,19 +1158,21 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                     child: Container(
                       height: 3,
                       decoration: BoxDecoration(
-                        gradient: LinearGradient(colors: [
-                          Colors.transparent,
-                          const Color(0xFFADFF2F).withOpacity(0.8),
-                          const Color(0xFFADFF2F),
-                          const Color(0xFFADFF2F).withOpacity(0.8),
-                          Colors.transparent,
-                        ]),
+                        gradient: LinearGradient(
+                          colors: [
+                            Colors.transparent,
+                            const Color(0xFFADFF2F).withOpacity(0.8),
+                            const Color(0xFFADFF2F),
+                            const Color(0xFFADFF2F).withOpacity(0.8),
+                            Colors.transparent,
+                          ],
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: const Color(0xFFADFF2F).withOpacity(0.7),
                             blurRadius: 22,
                             spreadRadius: 7,
-                          )
+                          ),
                         ],
                       ),
                     ),
@@ -1015,18 +1180,10 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                 ),
 
                 // Chaos meters (bottom-left)
-                Positioned(
-                  bottom: 170,
-                  left: 16,
-                  child: _buildChaosMeters(),
-                ),
+                Positioned(bottom: 170, left: 16, child: _buildChaosMeters()),
 
                 // Grade badge (bottom-right)
-                Positioned(
-                  bottom: 165,
-                  right: 16,
-                  child: _buildGradeBadge(),
-                ),
+                Positioned(bottom: 165, right: 16, child: _buildGradeBadge()),
 
                 // Debug label strip
                 if (_showDebugLabels)
@@ -1037,19 +1194,24 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                     child: Container(
                       color: Colors.black.withOpacity(0.75),
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 4),
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       child: Text(
                         _latestLabels.isEmpty
                             ? 'No image labels yet...'
                             : _latestLabels
-                                .take(10)
-                                .map((l) =>
-                                    '${l.label} ${(l.confidence * 100).toInt()}%')
-                                .join('  •  '),
+                                  .take(10)
+                                  .map(
+                                    (l) =>
+                                        '${l.label} ${(l.confidence * 100).toInt()}%',
+                                  )
+                                  .join('  •  '),
                         style: const TextStyle(
-                            color: Color(0xFFADFF2F),
-                            fontSize: 10,
-                            fontFamily: 'monospace'),
+                          color: Color(0xFFADFF2F),
+                          fontSize: 10,
+                          fontFamily: 'monospace',
+                        ),
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -1070,19 +1232,21 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                 // "I PICKED IT UP!" — only visible when mission is active
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
-                  transitionBuilder: (child, anim) =>
-                      SlideTransition(
+                  transitionBuilder: (child, anim) => SlideTransition(
                     position: Tween<Offset>(
-                            begin: const Offset(0, 1),
-                            end: Offset.zero)
-                        .animate(anim),
+                      begin: const Offset(0, 1),
+                      end: Offset.zero,
+                    ).animate(anim),
                     child: FadeTransition(opacity: anim, child: child),
                   ),
                   child: hasMission
                       ? Padding(
                           key: const ValueKey('pickupBtn'),
                           padding: const EdgeInsets.only(
-                              bottom: 12, left: 20, right: 20),
+                            bottom: 12,
+                            left: 20,
+                            right: 20,
+                          ),
                           child: SizedBox(
                             width: double.infinity,
                             child: ElevatedButton(
@@ -1090,21 +1254,19 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                                 backgroundColor: const Color(0xFF00E87A),
                                 foregroundColor: Colors.black,
                                 padding: const EdgeInsets.symmetric(
-                                    vertical: 16),
+                                  vertical: 16,
+                                ),
                                 shape: RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.circular(32)),
+                                  borderRadius: BorderRadius.circular(32),
+                                ),
                                 elevation: 14,
                                 shadowColor: const Color(0xFF00E87A),
                               ),
                               onPressed: _onItemCollected,
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: const [
-                                  Text('✅',
-                                      style:
-                                          TextStyle(fontSize: 22)),
+                                  Text('✅', style: TextStyle(fontSize: 22)),
                                   SizedBox(width: 10),
                                   Text(
                                     'I PICKED IT UP!',
@@ -1131,30 +1293,39 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                         backgroundColor: const Color(0xFFADFF2F),
                         foregroundColor: Colors.black,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 14),
+                          horizontal: 24,
+                          vertical: 14,
+                        ),
                         shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(30)),
+                          borderRadius: BorderRadius.circular(30),
+                        ),
                         elevation: 8,
                         shadowColor: const Color(0xFFADFF2F),
                       ),
                       onPressed: () => _showReport(context),
-                      icon: const Text('🔍',
-                          style: TextStyle(fontSize: 18)),
-                      label: const Text('ANALYZE',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              letterSpacing: 1)),
+                      icon: const Text('🔍', style: TextStyle(fontSize: 18)),
+                      label: const Text(
+                        'ANALYZE',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                        ),
+                      ),
                     ),
                     ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF222222),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 14),
+                          horizontal: 24,
+                          vertical: 14,
+                        ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(30),
                           side: const BorderSide(
-                              color: Color(0xFFADFF2F), width: 1.5),
+                            color: Color(0xFFADFF2F),
+                            width: 1.5,
+                          ),
                         ),
                       ),
                       onPressed: _isSaving ? null : _captureAndShare,
@@ -1163,15 +1334,17 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                               width: 18,
                               height: 18,
                               child: CircularProgressIndicator(
-                                  strokeWidth: 2,
-                                  color: Colors.white))
-                          : const Text('📸',
-                              style: TextStyle(fontSize: 18)),
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : const Text('📸', style: TextStyle(fontSize: 18)),
                       label: Text(
                         _isSaving ? 'SAVING...' : 'SAVE SCAN',
                         style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1),
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 1,
+                        ),
                       ),
                     ),
                   ],
@@ -1191,8 +1364,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     final grade = getCleanupGrade(_itemsCollected);
     final color = getGradeColor(grade);
     return Container(
-      padding:
-          const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: color.withOpacity(0.18),
         borderRadius: BorderRadius.circular(20),
@@ -1206,9 +1378,10 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
           Text(
             '$_itemsCollected picked up',
             style: TextStyle(
-                color: color,
-                fontSize: 12,
-                fontWeight: FontWeight.bold),
+              color: color,
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
@@ -1219,16 +1392,16 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
   Widget _buildMissionPanel({Key? key}) {
     return Container(
       key: key,
-      padding:
-          const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: const Color(0xFFFFD700).withOpacity(0.14),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFFFD700), width: 2),
         boxShadow: [
           BoxShadow(
-              color: const Color(0xFFFFD700).withOpacity(0.25),
-              blurRadius: 18)
+            color: const Color(0xFFFFD700).withOpacity(0.25),
+            blurRadius: 18,
+          ),
         ],
       ),
       child: Row(
@@ -1242,26 +1415,26 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                 const Text(
                   'YOUR MISSION',
                   style: TextStyle(
-                      color: Color(0xFFFFD700),
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2.0),
+                    color: Color(0xFFFFD700),
+                    fontSize: 10,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2.0,
+                  ),
                 ),
                 const SizedBox(height: 2),
                 Text(
                   'Pick up $_missionFriendlyLabel!',
                   style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold),
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 const Text(
                   'Then tap the green button ↓',
-                  style: TextStyle(
-                      color: Colors.white54,
-                      fontSize: 11),
+                  style: TextStyle(color: Colors.white54, fontSize: 11),
                 ),
               ],
             ),
@@ -1277,16 +1450,16 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
   Widget _buildCelebrationPanel({Key? key}) {
     return Container(
       key: key,
-      padding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
         color: const Color(0xFF00E87A).withOpacity(0.18),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFF00E87A), width: 2),
         boxShadow: [
           BoxShadow(
-              color: const Color(0xFF00E87A).withOpacity(0.35),
-              blurRadius: 22)
+            color: const Color(0xFF00E87A).withOpacity(0.35),
+            blurRadius: 22,
+          ),
         ],
       ),
       child: Column(
@@ -1304,8 +1477,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
           const SizedBox(height: 4),
           Text(
             getCleanupLabel(_itemsCollected),
-            style: const TextStyle(
-                color: Colors.white70, fontSize: 12),
+            style: const TextStyle(color: Colors.white70, fontSize: 12),
             textAlign: TextAlign.center,
           ),
         ],
@@ -1328,7 +1500,10 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
         Text(
           '${_detectedObjects.length} objects detected',
           style: const TextStyle(
-              color: Colors.white38, fontSize: 9, letterSpacing: 0.5),
+            color: Colors.white38,
+            fontSize: 9,
+            letterSpacing: 0.5,
+          ),
         ),
       ],
     );
@@ -1352,11 +1527,14 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
           ),
         ),
         const SizedBox(width: 6),
-        Text('${(cat.level * 100).toInt()}%',
-            style: TextStyle(
-                color: cat.color,
-                fontSize: 10,
-                fontWeight: FontWeight.bold)),
+        Text(
+          '${(cat.level * 100).toInt()}%',
+          style: TextStyle(
+            color: cat.color,
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
       ],
     );
   }
@@ -1379,45 +1557,48 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
             color: cleanupColor.withOpacity(0.15),
             border: Border.all(color: cleanupColor, width: 3),
             boxShadow: [
-              BoxShadow(
-                  color: cleanupColor.withOpacity(0.4),
-                  blurRadius: 12)
+              BoxShadow(color: cleanupColor.withOpacity(0.4), blurRadius: 12),
             ],
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(cleanupGrade,
-                  style: TextStyle(
-                      color: cleanupColor,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900)),
-              Text('CLEAN',
-                  style: TextStyle(
-                      color: cleanupColor.withOpacity(0.8),
-                      fontSize: 7,
-                      letterSpacing: 0.8)),
+              Text(
+                cleanupGrade,
+                style: TextStyle(
+                  color: cleanupColor,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+              Text(
+                'CLEAN',
+                style: TextStyle(
+                  color: cleanupColor.withOpacity(0.8),
+                  fontSize: 7,
+                  letterSpacing: 0.8,
+                ),
+              ),
             ],
           ),
         ),
         const SizedBox(height: 5),
         // Secondary: live chaos level
         Container(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+          padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
           decoration: BoxDecoration(
             color: Colors.black54,
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-                color: Colors.white24, width: 1),
+            border: Border.all(color: Colors.white24, width: 1),
           ),
           child: Text(
             'CHAOS $chaosGrade  ${(_totalChaos * 100).toInt()}%',
             style: const TextStyle(
-                color: Colors.white54,
-                fontSize: 9,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 0.5),
+              color: Colors.white54,
+              fontSize: 9,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
           ),
         ),
       ],
@@ -1431,10 +1612,11 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     final chaosGrade = getChaosGrade(_totalChaos);
     final chaosColor = getGradeColor(chaosGrade);
     final verdict = getChaosVerdict(
-        _felineCategory.level,
-        _floorCategory.level,
-        _splashCategory.level,
-        _furnitureCategory.level);
+      _felineCategory.level,
+      _floorCategory.level,
+      _splashCategory.level,
+      _furnitureCategory.level,
+    );
     final emojis = getChaosEmoji(_totalChaos);
     final topLabels = _latestLabels
         .where((l) => l.confidence > 0.50)
@@ -1447,8 +1629,8 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
       backgroundColor: const Color(0xFF111111),
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-          borderRadius:
-              BorderRadius.vertical(top: Radius.circular(24))),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
       builder: (ctx) => SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
@@ -1456,36 +1638,44 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
             mainAxisSize: MainAxisSize.min,
             children: [
               Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                      color: Colors.white24,
-                      borderRadius: BorderRadius.circular(2))),
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white24,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
               const SizedBox(height: 18),
-              Text('🏠 PRANK REPORT',
-                  style: TextStyle(
-                      color: cleanupColor,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: 2)),
+              Text(
+                '🏠 PRANK REPORT',
+                style: TextStyle(
+                  color: cleanupColor,
+                  fontSize: 22,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2,
+                ),
+              ),
               const SizedBox(height: 4),
-              Text(emojis,
-                  style: const TextStyle(fontSize: 28)),
+              Text(emojis, style: const TextStyle(fontSize: 28)),
 
               const SizedBox(height: 16),
 
               // Two grade boxes side by side
               Row(
-                mainAxisAlignment:
-                    MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   _reportGradeBox(
-                      'CLEANUP GRADE', cleanupGrade, cleanupColor,
-                      subtitle: '$_itemsCollected items picked up'),
+                    'CLEANUP GRADE',
+                    cleanupGrade,
+                    cleanupColor,
+                    subtitle: '$_itemsCollected items picked up',
+                  ),
                   _reportGradeBox(
-                      'CHAOS LEVEL', chaosGrade, chaosColor,
-                      subtitle:
-                          '${(_totalChaos * 100).toInt()}% messy'),
+                    'CHAOS LEVEL',
+                    chaosGrade,
+                    chaosColor,
+                    subtitle: '${(_totalChaos * 100).toInt()}% messy',
+                  ),
                 ],
               ),
 
@@ -1496,12 +1686,15 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
 
               if (topLabels.isNotEmpty) ...[
                 const SizedBox(height: 12),
-                Text('DETECTED: $topLabels',
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        color: Colors.white38,
-                        fontSize: 11,
-                        letterSpacing: 0.5)),
+                Text(
+                  'DETECTED: $topLabels',
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white38,
+                    fontSize: 11,
+                    letterSpacing: 0.5,
+                  ),
+                ),
               ],
 
               const SizedBox(height: 16),
@@ -1520,14 +1713,18 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
               Container(
                 padding: const EdgeInsets.all(14),
                 decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(12)),
-                child: Text(verdict,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 15,
-                        height: 1.5)),
+                  color: Colors.white.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  verdict,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    height: 1.5,
+                  ),
+                ),
               ),
               const SizedBox(height: 20),
               SizedBox(
@@ -1536,23 +1733,26 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFFADFF2F),
                     foregroundColor: Colors.black,
-                    padding:
-                        const EdgeInsets.symmetric(vertical: 14),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                     shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(30)),
+                      borderRadius: BorderRadius.circular(30),
+                    ),
                   ),
                   onPressed: () {
                     Navigator.pop(ctx);
                     Future.delayed(
-                        const Duration(milliseconds: 200),
-                        _captureAndShare);
+                      const Duration(milliseconds: 200),
+                      _captureAndShare,
+                    );
                   },
                   icon: const Icon(Icons.share_rounded),
-                  label: const Text('SHARE REPORT',
-                      style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 1)),
+                  label: const Text(
+                    'SHARE REPORT',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -1562,11 +1762,14 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     );
   }
 
-  Widget _reportGradeBox(String label, String grade, Color color,
-      {String subtitle = ''}) {
+  Widget _reportGradeBox(
+    String label,
+    String grade,
+    Color color, {
+    String subtitle = '',
+  }) {
     return Container(
-      padding:
-          const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
       decoration: BoxDecoration(
         color: color.withOpacity(0.12),
         borderRadius: BorderRadius.circular(12),
@@ -1574,21 +1777,28 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
       ),
       child: Column(
         children: [
-          Text(label,
-              style: TextStyle(
-                  color: color.withOpacity(0.85),
-                  fontSize: 9,
-                  letterSpacing: 1.5,
-                  fontWeight: FontWeight.bold)),
-          Text(grade,
-              style: TextStyle(
-                  color: color,
-                  fontSize: 34,
-                  fontWeight: FontWeight.w900)),
+          Text(
+            label,
+            style: TextStyle(
+              color: color.withOpacity(0.85),
+              fontSize: 9,
+              letterSpacing: 1.5,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          Text(
+            grade,
+            style: TextStyle(
+              color: color,
+              fontSize: 34,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
           if (subtitle.isNotEmpty)
-            Text(subtitle,
-                style: const TextStyle(
-                    color: Colors.white54, fontSize: 10)),
+            Text(
+              subtitle,
+              style: const TextStyle(color: Colors.white54, fontSize: 10),
+            ),
         ],
       ),
     );
@@ -1611,34 +1821,37 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     final progress = current >= thresholds.length - 1
         ? 1.0
         : (_itemsCollected - currentThreshold) /
-            (nextThreshold - currentThreshold);
-    final nextLabel =
-        current < labels.length - 1 ? labels[current + 1] : 'MAX';
+              (nextThreshold - currentThreshold);
+    final nextLabel = current < labels.length - 1 ? labels[current + 1] : 'MAX';
     final remaining = nextThreshold - _itemsCollected;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-          color: color.withOpacity(0.08),
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3))),
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('Progress to $nextLabel',
-                  style: TextStyle(
-                      color: color,
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold)),
               Text(
-                  current >= thresholds.length - 1
-                      ? 'MAX RANK!'
-                      : '$remaining more to go!',
-                  style: const TextStyle(
-                      color: Colors.white54, fontSize: 11)),
+                'Progress to $nextLabel',
+                style: TextStyle(
+                  color: color,
+                  fontSize: 11,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              Text(
+                current >= thresholds.length - 1
+                    ? 'MAX RANK!'
+                    : '$remaining more to go!',
+                style: const TextStyle(color: Colors.white54, fontSize: 11),
+              ),
             ],
           ),
           const SizedBox(height: 6),
@@ -1665,11 +1878,14 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(cat.name,
-                  style: const TextStyle(
-                      color: Colors.white70,
-                      fontSize: 11,
-                      letterSpacing: 1)),
+              Text(
+                cat.name,
+                style: const TextStyle(
+                  color: Colors.white70,
+                  fontSize: 11,
+                  letterSpacing: 1,
+                ),
+              ),
               const SizedBox(height: 4),
               ClipRRect(
                 borderRadius: BorderRadius.circular(4),
@@ -1677,19 +1893,21 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                   value: cat.level,
                   minHeight: 10,
                   backgroundColor: Colors.white12,
-                  valueColor:
-                      AlwaysStoppedAnimation<Color>(cat.color),
+                  valueColor: AlwaysStoppedAnimation<Color>(cat.color),
                 ),
               ),
             ],
           ),
         ),
         const SizedBox(width: 8),
-        Text('${(cat.level * 100).toInt()}%',
-            style: TextStyle(
-                color: cat.color,
-                fontWeight: FontWeight.bold,
-                fontSize: 13)),
+        Text(
+          '${(cat.level * 100).toInt()}%',
+          style: TextStyle(
+            color: cat.color,
+            fontWeight: FontWeight.bold,
+            fontSize: 13,
+          ),
+        ),
       ],
     );
   }
@@ -1722,19 +1940,20 @@ class PrankBoxPainter extends CustomPainter {
       final DetectedObject obj = objects[i];
 
       // Determine if this object is the mission target.
-      final bool isTarget = targetId != null &&
+      final bool isTarget =
+          targetId != null &&
           (obj.trackingId == targetId ||
               (obj.trackingId == null && -(i + 1) == targetId));
 
       final String rawLabel = obj.labels.isNotEmpty
           ? obj.labels
-              .reduce((a, b) => a.confidence > b.confidence ? a : b)
-              .text
+                .reduce((a, b) => a.confidence > b.confidence ? a : b)
+                .text
           : 'Object';
       final double conf = obj.labels.isNotEmpty
           ? obj.labels
-              .reduce((a, b) => a.confidence > b.confidence ? a : b)
-              .confidence
+                .reduce((a, b) => a.confidence > b.confidence ? a : b)
+                .confidence
           : 0.5;
 
       final rect = Rect.fromLTRB(
@@ -1748,18 +1967,17 @@ class PrankBoxPainter extends CustomPainter {
       final Color color = isTarget
           ? const Color(0xFFFFD700) // Gold for mission target
           : conf > 0.75
-              ? const Color(0xFFFF3366)
-              : conf > 0.55
-                  ? const Color(0xFFFF6B35)
-                  : const Color(0xFFADFF2F);
+          ? const Color(0xFFFF3366)
+          : conf > 0.55
+          ? const Color(0xFFFF6B35)
+          : const Color(0xFFADFF2F);
 
       final Paint paint = Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = isTarget ? 4.5 : 2.5
         ..color = color;
 
-      final double cornerLen =
-          (rect.width * 0.20).clamp(12.0, 32.0);
+      final double cornerLen = (rect.width * 0.20).clamp(12.0, 32.0);
       _drawCorners(canvas, rect, paint, cornerLen);
 
       // Gold tinted fill for the mission target.
@@ -1792,7 +2010,11 @@ class PrankBoxPainter extends CustomPainter {
       if (labelTop < 0) labelTop = rect.top + 2;
 
       final bgRect = Rect.fromLTWH(
-          rect.left, labelTop, tp.width + pad * 2, tp.height + pad * 2);
+        rect.left,
+        labelTop,
+        tp.width + pad * 2,
+        tp.height + pad * 2,
+      );
       canvas.drawRRect(
         RRect.fromRectAndRadius(bgRect, const Radius.circular(4)),
         Paint()..color = color.withOpacity(0.90),
@@ -1801,24 +2023,23 @@ class PrankBoxPainter extends CustomPainter {
     }
   }
 
-  void _drawCorners(
-      Canvas canvas, Rect rect, Paint paint, double len) {
+  void _drawCorners(Canvas canvas, Rect rect, Paint paint, double len) {
+    canvas.drawLine(rect.topLeft, rect.topLeft.translate(len, 0), paint);
+    canvas.drawLine(rect.topLeft, rect.topLeft.translate(0, len), paint);
+    canvas.drawLine(rect.topRight, rect.topRight.translate(-len, 0), paint);
+    canvas.drawLine(rect.topRight, rect.topRight.translate(0, len), paint);
+    canvas.drawLine(rect.bottomLeft, rect.bottomLeft.translate(len, 0), paint);
+    canvas.drawLine(rect.bottomLeft, rect.bottomLeft.translate(0, -len), paint);
     canvas.drawLine(
-        rect.topLeft, rect.topLeft.translate(len, 0), paint);
+      rect.bottomRight,
+      rect.bottomRight.translate(-len, 0),
+      paint,
+    );
     canvas.drawLine(
-        rect.topLeft, rect.topLeft.translate(0, len), paint);
-    canvas.drawLine(
-        rect.topRight, rect.topRight.translate(-len, 0), paint);
-    canvas.drawLine(
-        rect.topRight, rect.topRight.translate(0, len), paint);
-    canvas.drawLine(
-        rect.bottomLeft, rect.bottomLeft.translate(len, 0), paint);
-    canvas.drawLine(
-        rect.bottomLeft, rect.bottomLeft.translate(0, -len), paint);
-    canvas.drawLine(
-        rect.bottomRight, rect.bottomRight.translate(-len, 0), paint);
-    canvas.drawLine(
-        rect.bottomRight, rect.bottomRight.translate(0, -len), paint);
+      rect.bottomRight,
+      rect.bottomRight.translate(0, -len),
+      paint,
+    );
   }
 
   @override

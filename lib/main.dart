@@ -133,7 +133,6 @@ double floorBoost(String l) {
       l.contains('glove') ||
       l.contains('scarf'))
     return 0.12;
-  // Soft furnishings on the floor — very common child mess
   if (l.contains('blanket') ||
       l.contains('quilt') ||
       l.contains('duvet') ||
@@ -142,14 +141,12 @@ double floorBoost(String l) {
     return 0.18;
   if (l.contains('pillow') || l.contains('cushion') || l.contains('bolster'))
     return 0.16;
-  // Stuffed animals / soft toys
   if (l.contains('stuffed') ||
       l.contains('plush') ||
       l.contains('teddy') ||
       l.contains('soft toy') ||
       l.contains('cuddly'))
     return 0.18;
-  // Other common floor clutter
   if (l.contains('towel') || l.contains('rag')) return 0.14;
   if (l.contains('remote') ||
       l.contains('controller') ||
@@ -227,7 +224,6 @@ double furnitureBoost(String l) {
   return 0.0;
 }
 
-// Kid-friendly pickup label for the mission card
 String getMissionLabel(String rawLabel) {
   final l = rawLabel.toLowerCase();
   if (felineBoost(l) > 0) return 'the pet toy';
@@ -297,7 +293,6 @@ String getMissionLabel(String rawLabel) {
   return rawLabel.isNotEmpty ? 'that ${rawLabel.toLowerCase()}' : 'that item';
 }
 
-// Bounding box display label
 String getPrankLabel(String rawLabel) {
   final l = rawLabel.toLowerCase();
   if (felineBoost(l) > 0) return '🐱 ${rawLabel.toUpperCase()}';
@@ -376,7 +371,6 @@ String getChaosEmoji(double total) {
   return '😌✅';
 }
 
-// Chaos grade: S+ = messiest, F = cleanest. Lower chaos = better room.
 String getChaosGrade(double total) {
   if (total > 0.80) return 'S+';
   if (total > 0.65) return 'A';
@@ -386,7 +380,6 @@ String getChaosGrade(double total) {
   return 'F';
 }
 
-// CLEANUP grade: improves as more items are collected. Traditional A = great.
 String getCleanupGrade(int items) {
   if (items >= 20) return 'S+';
   if (items >= 12) return 'A';
@@ -423,13 +416,307 @@ Color getGradeColor(String grade) {
 }
 
 // ─────────────────────────────────────────────────
-// DEBOUNCED OBJECT – keeps recently-seen detections
-// alive for a few frames so the HUD doesn't flicker.
+// DEBOUNCED OBJECT
 // ─────────────────────────────────────────────────
 class _DebouncedObject {
   DetectedObject object;
   int lastSeenFrame;
   _DebouncedObject({required this.object, required this.lastSeenFrame});
+}
+
+// ─────────────────────────────────────────────────
+// ABOUT SCREEN
+// ─────────────────────────────────────────────────
+class AboutScreen extends StatelessWidget {
+  const AboutScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0A),
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Color(0xFFADFF2F)),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text(
+          '🏠 ABOUT',
+          style: TextStyle(
+            color: Color(0xFFADFF2F),
+            fontSize: 16,
+            fontWeight: FontWeight.w900,
+            letterSpacing: 2.0,
+            shadows: [Shadow(blurRadius: 12, color: Color(0xFFADFF2F))],
+          ),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const SizedBox(height: 12),
+
+            // App icon / logo area
+            Container(
+              width: 120,
+              height: 120,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFFADFF2F).withOpacity(0.08),
+                border: Border.all(
+                  color: const Color(0xFFADFF2F).withOpacity(0.5),
+                  width: 2.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFADFF2F).withOpacity(0.25),
+                    blurRadius: 40,
+                    spreadRadius: 4,
+                  ),
+                ],
+              ),
+              child: const Center(
+                child: Text('🏠', style: TextStyle(fontSize: 54)),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            const Text(
+              'HOW PRANKED MY HOUSE',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xFFADFF2F),
+                fontSize: 20,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 1.5,
+                shadows: [
+                  Shadow(blurRadius: 16, color: Color(0xFFADFF2F)),
+                ],
+              ),
+            ),
+            const SizedBox(height: 6),
+            const Text(
+              'by skyberrys',
+              style: TextStyle(
+                color: Colors.white38,
+                fontSize: 13,
+                letterSpacing: 3,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 32),
+
+            // Info cards
+            _infoCard(
+              emoji: '🔍',
+              color: const Color(0xFFADFF2F),
+              title: 'What does it do?',
+              body:
+                  'Point your camera at any room and watch How Pranked My House '
+                  'scan for hazards in real time — LEGO minefields, splash zones, '
+                  'shin destroyers, and feline agents of chaos. Score your home\'s '
+                  'prank potential and challenge the kids to clean it up.',
+            ),
+            const SizedBox(height: 14),
+            _infoCard(
+              emoji: '🎮',
+              color: const Color(0xFFFF6B35),
+              title: 'Cleanup Game',
+              body:
+                  'Turn tidying into a mission. The app picks an item to pick up, '
+                  'you grab it and tap the green button, and your Cleanup Grade climbs. '
+                  'Get to S+ for legendary tidier status.',
+            ),
+            const SizedBox(height: 14),
+            _infoCard(
+              emoji: '🔒',
+              color: const Color(0xFF00CFFF),
+              title: 'Your privacy',
+              body:
+                  'No data leaves your phone. No accounts, no cloud, no tracking. '
+                  'The camera is used only for live object detection — nothing is '
+                  'stored or transmitted.',
+            ),
+            const SizedBox(height: 14),
+            _infoCard(
+              emoji: '🚫',
+              color: const Color(0xFFFFD700),
+              title: 'Zero ads, forever',
+              body:
+                  'How Pranked My House is completely free with no advertisements — '
+                  'now and always. No sponsored content, no promoted items.',
+            ),
+            const SizedBox(height: 32),
+
+            // Divider
+            Container(
+              height: 1,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(colors: [
+                  Colors.transparent,
+                  const Color(0xFFADFF2F).withOpacity(0.4),
+                  Colors.transparent,
+                ]),
+              ),
+            ),
+            const SizedBox(height: 28),
+
+            // skyberrys branding
+            Container(
+              width: 80,
+              height: 80,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white.withOpacity(0.04),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.15),
+                  width: 1.5,
+                ),
+              ),
+              child: const Center(
+                child: Text('🫐', style: TextStyle(fontSize: 36)),
+              ),
+            ),
+            const SizedBox(height: 14),
+            const Text(
+              'Made by skyberrys',
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                letterSpacing: 1.0,
+              ),
+            ),
+            const SizedBox(height: 10),
+
+            // Website link
+            GestureDetector(
+              onTap: () {
+                // Opens URL — requires url_launcher if you want in-app browser.
+                // For now copies to clipboard as a reliable fallback.
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Visit skyberrys.com'),
+                    backgroundColor: Color(0xFF1A1A1A),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+              child: Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFADFF2F).withOpacity(0.08),
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: const Color(0xFFADFF2F).withOpacity(0.35),
+                    width: 1.5,
+                  ),
+                ),
+                child: const Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.language,
+                        color: Color(0xFFADFF2F), size: 16),
+                    SizedBox(width: 8),
+                    Text(
+                      'skyberrys.com',
+                      style: TextStyle(
+                        color: Color(0xFFADFF2F),
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 14),
+
+            // Contact email
+            GestureDetector(
+              onTap: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('carrie@skyberrys.com'),
+                    backgroundColor: Color(0xFF1A1A1A),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              },
+              child: const Text(
+                'carrie@skyberrys.com',
+                style: TextStyle(
+                  color: Colors.white38,
+                  fontSize: 13,
+                  decoration: TextDecoration.underline,
+                  decorationColor: Colors.white24,
+                ),
+              ),
+            ),
+            const SizedBox(height: 36),
+            const Text(
+              '© skyberrys. All rights reserved.',
+              style: TextStyle(color: Colors.white24, fontSize: 11),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _infoCard({
+    required String emoji,
+    required Color color,
+    required String title,
+    required String body,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.06),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withOpacity(0.25), width: 1.5),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 28)),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 13,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  body,
+                  style: const TextStyle(
+                    color: Colors.white60,
+                    fontSize: 13,
+                    height: 1.55,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }
 
 // ─────────────────────────────────────────────────
@@ -459,25 +746,16 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
   List<DetectedObject> _detectedObjects = [];
   List<ImageLabel> _latestLabels = [];
 
-  // ── Debounce: keep objects visible for a few frames after last detection ──
-  // Keyed by tracking ID (or synthetic ID for untracked objects).
   final Map<int, _DebouncedObject> _debouncedObjects = {};
-  // How many frames an object survives after it stops being detected.
   static const int _debounceGraceFrames = 10;
 
-  // Actual camera frame area in pixels — captured from the first frame.
-  // Used for the size-gate: objects > 25% of frame area are not pickuppable.
-  double _frameArea =
-      640.0 * 480.0; // sensible default, overwritten on first frame
+  double _frameArea = 640.0 * 480.0;
 
-  // ── Cleanup tracking ──────────────────────────────
   int _itemsCollected = 0;
 
-  // Current mission: the object we're asking the kid to pick up.
-  // Identified by trackingId (or negative list-index if trackingId is null).
   int? _targetId;
-  String? _targetRawLabel; // ML Kit label text (for re-matching)
-  String? _missionFriendlyLabel; // Kid-friendly display
+  String? _targetRawLabel;
+  String? _missionFriendlyLabel;
 
   bool _celebrating = false;
   String _celebrationText = '';
@@ -536,7 +814,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     ).animate(_scanController);
   }
 
-  // ── Camera ────────────────────────────────────────
   Future<void> _initCamera() async {
     if (_cameras.isEmpty) {
       debugPrint('No cameras available');
@@ -588,7 +865,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     }
   }
 
-  // ── Detectors ─────────────────────────────────────
   void _initDetectors() {
     _objectDetector = ObjectDetector(
       options: ObjectDetectorOptions(
@@ -613,29 +889,9 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     super.dispose();
   }
 
-  // ── Mission target selection ───────────────────────
-  //
-  // NEW APPROACH: size-first, not label-first.
-  //
-  // The fundamental insight is that anything you can physically pick up fits
-  // in your arms — it cannot fill 25%+ of the camera frame from a normal
-  // standing distance. Pianos, cabinets, yoga mats, and carpets all fail
-  // this test naturally, without needing to name them in a blocklist.
-  //
-  // Algorithm:
-  //   1. Size gate  — drop any object whose bounding box > 25% of frame area.
-  //   2. Label preference — among the survivors, score by known messy labels
-  //      (toys, clothes, cups, etc.) and pick the highest scorer.
-  //   3. Fallback — if nothing has a recognisable label, pick the smallest
-  //      object that passed the size gate (unlabelled small object = probably
-  //      a toy or clutter).
-  //   4. Minimal blocklist — last-resort veto for a handful of things that
-  //      can appear small in frame (e.g. a close-up of a shelf bracket).
-  //
   void _updateMissionTarget(List<DetectedObject> objects) {
     if (objects.isEmpty) return;
 
-    // ── Sticky: keep current target while it's still visible ──────────────
     if (_targetId != null) {
       final byId = objects.where((o) => o.trackingId == _targetId);
       if (byId.isNotEmpty) return;
@@ -658,10 +914,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
       _missionFriendlyLabel = null;
     }
 
-    // ── STEP 1: Size gate (primary filter) ────────────────────────────────
-    // Reject objects whose bounding box covers > 25% of the camera frame.
-    // This single rule eliminates pianos, cabinets, sofas, yoga mats, rugs,
-    // and anything else that is too large to pick up.
     final maxArea = _frameArea * 0.25;
 
     final sizeFiltered = objects.where((o) {
@@ -669,20 +921,14 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
       return area <= maxArea;
     }).toList();
 
-    if (sizeFiltered.isEmpty) return; // Everything in frame is too large.
+    if (sizeFiltered.isEmpty) return;
 
-    // ── STEP 2: Minimal blocklist veto ────────────────────────────────────
-    // Only used for the small set of things that can look "small" in frame
-    // (e.g. camera very close to a shelf) but are still not pickuppable.
     final candidates = sizeFiltered
         .where((o) => !o.labels.any((lbl) => _isObviouslyFixed(lbl.text)))
         .toList();
 
-    // If the blocklist removed everything, fall back to size-only list.
     final pool = candidates.isNotEmpty ? candidates : sizeFiltered;
 
-    // ── STEP 3: Label-based scoring ───────────────────────────────────────
-    // Prefer objects with known "messy" labels. Score by boost × confidence.
     DetectedObject? best;
     String? bestLabel;
     double bestScore = -1;
@@ -701,7 +947,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
       }
     }
 
-    // ── STEP 4: Fallback — smallest object ────────────────────────────────
     if (best == null) {
       pool.sort((a, b) {
         final aArea = a.boundingBox.width * a.boundingBox.height;
@@ -720,18 +965,13 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
         : 'that item on the floor';
   }
 
-  // Generate a stable-ish ID for objects without a tracking ID, based on
-  // the bounding box center quantised to a coarse grid and the primary label.
   int _syntheticId(DetectedObject obj, int index) {
     final cx = (obj.boundingBox.center.dx / 40).round();
     final cy = (obj.boundingBox.center.dy / 40).round();
     final label = obj.labels.isNotEmpty ? obj.labels.first.text.hashCode : 0;
-    // Combine into a single int unlikely to collide with real tracking IDs.
     return 0x40000000 ^ (cx * 7919 + cy * 6271 + label);
   }
 
-  // Minimal blocklist — only items that can appear small in frame but are
-  // still not pickuppable. Kept deliberately short; size does the real work.
   bool _isObviouslyFixed(String rawLabel) {
     final l = rawLabel.toLowerCase();
     const fixed = [
@@ -758,14 +998,12 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     return fixed.any((f) => l.contains(f));
   }
 
-  // ── Frame processor ───────────────────────────────
   void _processFrame(CameraImage image) async {
     if (!_canProcess || _isBusy) return;
     _isBusy = true;
     _frameCount++;
 
     try {
-      // iOS outputs bgra8888 (single plane); Android outputs nv21 (multi-plane).
       final Uint8List bytes;
       final InputImageFormat format;
       if (Platform.isIOS) {
@@ -780,7 +1018,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
         format = InputImageFormat.nv21;
       }
 
-      // Capture real frame area once (ML Kit bounding boxes are in this space).
       _frameArea = image.width.toDouble() * image.height.toDouble();
 
       final inputImage = InputImage.fromBytes(
@@ -806,8 +1043,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
 
       if (mounted) {
         setState(() {
-          // ── Debounce merge ─────────────────────────────────────────────
-          // Update existing entries and add new detections.
           final seenIds = <int>{};
           for (int i = 0; i < objects.length; i++) {
             final obj = objects[i];
@@ -818,55 +1053,38 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
               lastSeenFrame: _frameCount,
             );
           }
-          // Expire entries not seen for _debounceGraceFrames.
           _debouncedObjects.removeWhere(
             (id, entry) =>
                 _frameCount - entry.lastSeenFrame > _debounceGraceFrames,
           );
-          // Build the stable list that the rest of the pipeline uses.
           _detectedObjects = _debouncedObjects.values
               .map((e) => e.object)
               .toList();
 
           if (_frameCount % 8 == 0) _latestLabels = labels;
 
-          // Update mission target (only when not celebrating).
           if (!_celebrating) _updateMissionTarget(_detectedObjects);
 
-          // Cleanup bonus: each item collected permanently damps chaos boosts.
-          // Using a smaller per-item value so the room doesn't clean itself
-          // too fast — 20 items needed for maximum relief (~0.30 cap).
           final cleanupBonus = (_itemsCollected * 0.015).clamp(0.0, 0.30);
 
-          // Passive decay is very slow — the room should stay messy unless
-          // the child is actively picking things up.
           const decay = 0.0005;
-          _felineCategory.level = (_felineCategory.level - decay).clamp(
-            0.1,
-            1.0,
-          );
-          _floorCategory.level = (_floorCategory.level - decay).clamp(0.1, 1.0);
-          _splashCategory.level = (_splashCategory.level - decay).clamp(
-            0.1,
-            1.0,
-          );
-          _furnitureCategory.level = (_furnitureCategory.level - decay).clamp(
-            0.1,
-            1.0,
-          );
+          _felineCategory.level =
+              (_felineCategory.level - decay).clamp(0.1, 1.0);
+          _floorCategory.level =
+              (_floorCategory.level - decay).clamp(0.1, 1.0);
+          _splashCategory.level =
+              (_splashCategory.level - decay).clamp(0.1, 1.0);
+          _furnitureCategory.level =
+              (_furnitureCategory.level - decay).clamp(0.1, 1.0);
 
-          // Object count → floor chaos, slightly offset by cleanup bonus.
           final count = _detectedObjects.length;
           if (count > 0) {
             final countBoost = (count * 0.025).clamp(0.0, 0.20);
             _floorCategory.level =
-                (_floorCategory.level + countBoost - cleanupBonus * 0.15).clamp(
-                  0.1,
-                  1.0,
-                );
+                (_floorCategory.level + countBoost - cleanupBonus * 0.15)
+                    .clamp(0.1, 1.0);
           }
 
-          // Object detection labels.
           for (final obj in _detectedObjects) {
             for (final label in obj.labels) {
               if (label.confidence < 0.30) continue;
@@ -895,7 +1113,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
             }
           }
 
-          // Image labeler (every 8 frames, larger boost).
           if (_frameCount % 8 == 0) {
             for (final label in labels) {
               if (label.confidence < 0.40) continue;
@@ -931,7 +1148,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     _isBusy = false;
   }
 
-  // ── Item collected ────────────────────────────────
   void _onItemCollected() {
     if (_celebrating) return;
     setState(() {
@@ -940,22 +1156,16 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
       _celebrationText =
           _celebrations[(_itemsCollected - 1) % _celebrations.length];
 
-      // Immediate chaos reduction on pickup — kept modest so the bars
-      // don't crater instantly. The real benefit builds up via cleanupBonus.
       const reduction = 0.06;
-      _floorCategory.level = (_floorCategory.level - reduction).clamp(0.1, 1.0);
-      _felineCategory.level = (_felineCategory.level - reduction * 0.4).clamp(
-        0.1,
-        1.0,
-      );
-      _splashCategory.level = (_splashCategory.level - reduction * 0.4).clamp(
-        0.1,
-        1.0,
-      );
-      _furnitureCategory.level = (_furnitureCategory.level - reduction * 0.4)
-          .clamp(0.1, 1.0);
+      _floorCategory.level =
+          (_floorCategory.level - reduction).clamp(0.1, 1.0);
+      _felineCategory.level =
+          (_felineCategory.level - reduction * 0.4).clamp(0.1, 1.0);
+      _splashCategory.level =
+          (_splashCategory.level - reduction * 0.4).clamp(0.1, 1.0);
+      _furnitureCategory.level =
+          (_furnitureCategory.level - reduction * 0.4).clamp(0.1, 1.0);
 
-      // Clear mission so a new one is selected after celebration.
       _targetId = null;
       _targetRawLabel = null;
       _missionFriendlyLabel = null;
@@ -973,7 +1183,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
           _furnitureCategory.level) /
       4.0;
 
-  // ── Share ─────────────────────────────────────────
   Future<void> _captureAndShare() async {
     setState(() => _isSaving = true);
     try {
@@ -982,9 +1191,8 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
               as RenderRepaintBoundary?;
       if (boundary == null) return;
       final ui.Image img = await boundary.toImage(pixelRatio: 2.0);
-      final ByteData? byteData = await img.toByteData(
-        format: ui.ImageByteFormat.png,
-      );
+      final ByteData? byteData =
+          await img.toByteData(format: ui.ImageByteFormat.png);
       if (byteData == null) return;
       final tempDir = await getTemporaryDirectory();
       final file = File(
@@ -1004,7 +1212,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     }
   }
 
-  // ── Build ─────────────────────────────────────────
   @override
   Widget build(BuildContext context) {
     if (!_cameraReady) {
@@ -1096,7 +1303,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                   ),
                 ),
 
-                // ── Top bar: title + cleanup counter ──
+                // ── Top bar: title + cleanup counter + about button ──
                 Positioned(
                   top: 48,
                   left: 16,
@@ -1128,7 +1335,39 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                           ),
                         ),
                       ),
-                      _buildItemBadge(),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          _buildItemBadge(),
+                          const SizedBox(width: 8),
+                          // ── About button ──
+                          GestureDetector(
+                            onTap: () => Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => const AboutScreen(),
+                              ),
+                            ),
+                            child: Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white.withOpacity(0.08),
+                                border: Border.all(
+                                  color: const Color(0xFFADFF2F).withOpacity(0.4),
+                                  width: 1.5,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.info_outline,
+                                color: Color(0xFFADFF2F),
+                                size: 17,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
@@ -1180,10 +1419,12 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                 ),
 
                 // Chaos meters (bottom-left)
-                Positioned(bottom: 170, left: 16, child: _buildChaosMeters()),
+                Positioned(
+                    bottom: 170, left: 16, child: _buildChaosMeters()),
 
                 // Grade badge (bottom-right)
-                Positioned(bottom: 165, right: 16, child: _buildGradeBadge()),
+                Positioned(
+                    bottom: 165, right: 16, child: _buildGradeBadge()),
 
                 // Debug label strip
                 if (_showDebugLabels)
@@ -1229,7 +1470,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                // "I PICKED IT UP!" — only visible when mission is active
                 AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
                   transitionBuilder: (child, anim) => SlideTransition(
@@ -1284,7 +1524,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                       : const SizedBox(key: ValueKey('noPick')),
                 ),
 
-                // ANALYZE + SAVE row
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -1357,9 +1596,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     );
   }
 
-  // ── Sub-widgets ───────────────────────────────────
-
-  /// Small badge in the top-right showing items collected.
   Widget _buildItemBadge() {
     final grade = getCleanupGrade(_itemsCollected);
     final color = getGradeColor(grade);
@@ -1388,7 +1624,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     );
   }
 
-  /// Gold card showing the current mission target.
   Widget _buildMissionPanel({Key? key}) {
     return Container(
       key: key,
@@ -1446,7 +1681,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     );
   }
 
-  /// Green celebration panel shown briefly after each pickup.
   Widget _buildCelebrationPanel({Key? key}) {
     return Container(
       key: key,
@@ -1539,7 +1773,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     );
   }
 
-  /// Right-side badge showing BOTH cleanup grade (primary) and chaos grade.
   Widget _buildGradeBadge() {
     final cleanupGrade = getCleanupGrade(_itemsCollected);
     final cleanupColor = getGradeColor(cleanupGrade);
@@ -1548,7 +1781,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     return Column(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        // Primary: cleanup grade (gets BETTER over time)
         Container(
           width: 70,
           height: 70,
@@ -1557,7 +1789,8 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
             color: cleanupColor.withOpacity(0.15),
             border: Border.all(color: cleanupColor, width: 3),
             boxShadow: [
-              BoxShadow(color: cleanupColor.withOpacity(0.4), blurRadius: 12),
+              BoxShadow(
+                  color: cleanupColor.withOpacity(0.4), blurRadius: 12),
             ],
           ),
           child: Column(
@@ -1583,7 +1816,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
           ),
         ),
         const SizedBox(height: 5),
-        // Secondary: live chaos level
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
           decoration: BoxDecoration(
@@ -1605,7 +1837,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     );
   }
 
-  // ── Report modal ──────────────────────────────────
   void _showReport(BuildContext context) {
     final cleanupGrade = getCleanupGrade(_itemsCollected);
     final cleanupColor = getGradeColor(cleanupGrade);
@@ -1657,10 +1888,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
               ),
               const SizedBox(height: 4),
               Text(emojis, style: const TextStyle(fontSize: 28)),
-
               const SizedBox(height: 16),
-
-              // Two grade boxes side by side
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -1678,12 +1906,8 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                   ),
                 ],
               ),
-
               const SizedBox(height: 12),
-
-              // Progress toward next cleanup grade
               _buildCleanupProgress(cleanupColor),
-
               if (topLabels.isNotEmpty) ...[
                 const SizedBox(height: 12),
                 Text(
@@ -1696,7 +1920,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                   ),
                 ),
               ],
-
               const SizedBox(height: 16),
               const Divider(color: Colors.white12),
               const SizedBox(height: 12),
@@ -1755,6 +1978,19 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                   ),
                 ),
               ),
+              // ── Made by skyberrys footer in report ──
+              const SizedBox(height: 20),
+              const Divider(color: Colors.white12),
+              const SizedBox(height: 12),
+              const Text(
+                'Made by skyberrys  🫐  skyberrys.com',
+                style: TextStyle(
+                  color: Colors.white24,
+                  fontSize: 11,
+                  letterSpacing: 0.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
             ],
           ),
         ),
@@ -1804,9 +2040,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     );
   }
 
-  /// Progress bar toward the next cleanup grade inside the report.
   Widget _buildCleanupProgress(Color color) {
-    // Thresholds: 1=D, 3=C, 7=B, 12=A, 20=S+
     final thresholds = [0, 1, 3, 7, 12, 20];
     final labels = ['F', 'D', 'C', 'B', 'A', 'S+'];
     int current = 0;
@@ -1822,7 +2056,8 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
         ? 1.0
         : (_itemsCollected - currentThreshold) /
               (nextThreshold - currentThreshold);
-    final nextLabel = current < labels.length - 1 ? labels[current + 1] : 'MAX';
+    final nextLabel =
+        current < labels.length - 1 ? labels[current + 1] : 'MAX';
     final remaining = nextThreshold - _itemsCollected;
 
     return Container(
@@ -1850,7 +2085,8 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                 current >= thresholds.length - 1
                     ? 'MAX RANK!'
                     : '$remaining more to go!',
-                style: const TextStyle(color: Colors.white54, fontSize: 11),
+                style:
+                    const TextStyle(color: Colors.white54, fontSize: 11),
               ),
             ],
           ),
@@ -1915,8 +2151,6 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
 
 // ─────────────────────────────────────────────────
 // BOUNDING BOX PAINTER
-// The mission target object gets a gold pulsing highlight;
-// all others get the standard colour-coded corners.
 // ─────────────────────────────────────────────────
 class PrankBoxPainter extends CustomPainter {
   final List<DetectedObject> objects;
@@ -1939,7 +2173,6 @@ class PrankBoxPainter extends CustomPainter {
     for (int i = 0; i < objects.length; i++) {
       final DetectedObject obj = objects[i];
 
-      // Determine if this object is the mission target.
       final bool isTarget =
           targetId != null &&
           (obj.trackingId == targetId ||
@@ -1965,7 +2198,7 @@ class PrankBoxPainter extends CustomPainter {
       if (rect.width < 10 || rect.height < 10) continue;
 
       final Color color = isTarget
-          ? const Color(0xFFFFD700) // Gold for mission target
+          ? const Color(0xFFFFD700)
           : conf > 0.75
           ? const Color(0xFFFF3366)
           : conf > 0.55
@@ -1980,7 +2213,6 @@ class PrankBoxPainter extends CustomPainter {
       final double cornerLen = (rect.width * 0.20).clamp(12.0, 32.0);
       _drawCorners(canvas, rect, paint, cornerLen);
 
-      // Gold tinted fill for the mission target.
       if (isTarget) {
         canvas.drawRRect(
           RRect.fromRectAndRadius(rect, const Radius.circular(6)),
@@ -1988,7 +2220,6 @@ class PrankBoxPainter extends CustomPainter {
         );
       }
 
-      // Label chip.
       final String labelText = isTarget
           ? '🎯 PICK THIS UP!'
           : '${getPrankLabel(rawLabel)}  ${(conf * 100).toInt()}%';
@@ -2028,18 +2259,14 @@ class PrankBoxPainter extends CustomPainter {
     canvas.drawLine(rect.topLeft, rect.topLeft.translate(0, len), paint);
     canvas.drawLine(rect.topRight, rect.topRight.translate(-len, 0), paint);
     canvas.drawLine(rect.topRight, rect.topRight.translate(0, len), paint);
-    canvas.drawLine(rect.bottomLeft, rect.bottomLeft.translate(len, 0), paint);
-    canvas.drawLine(rect.bottomLeft, rect.bottomLeft.translate(0, -len), paint);
     canvas.drawLine(
-      rect.bottomRight,
-      rect.bottomRight.translate(-len, 0),
-      paint,
-    );
+        rect.bottomLeft, rect.bottomLeft.translate(len, 0), paint);
     canvas.drawLine(
-      rect.bottomRight,
-      rect.bottomRight.translate(0, -len),
-      paint,
-    );
+        rect.bottomLeft, rect.bottomLeft.translate(0, -len), paint);
+    canvas.drawLine(
+        rect.bottomRight, rect.bottomRight.translate(-len, 0), paint);
+    canvas.drawLine(
+        rect.bottomRight, rect.bottomRight.translate(0, -len), paint);
   }
 
   @override

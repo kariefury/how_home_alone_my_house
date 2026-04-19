@@ -492,9 +492,7 @@ class AboutScreen extends StatelessWidget {
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 1.5,
-                shadows: [
-                  Shadow(blurRadius: 16, color: Color(0xFFADFF2F)),
-                ],
+                shadows: [Shadow(blurRadius: 16, color: Color(0xFFADFF2F))],
               ),
             ),
             const SizedBox(height: 6),
@@ -555,11 +553,13 @@ class AboutScreen extends StatelessWidget {
             Container(
               height: 1,
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [
-                  Colors.transparent,
-                  const Color(0xFFADFF2F).withOpacity(0.4),
-                  Colors.transparent,
-                ]),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.transparent,
+                    const Color(0xFFADFF2F).withOpacity(0.4),
+                    Colors.transparent,
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 28),
@@ -606,8 +606,10 @@ class AboutScreen extends StatelessWidget {
                 );
               },
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFADFF2F).withOpacity(0.08),
                   borderRadius: BorderRadius.circular(24),
@@ -619,8 +621,7 @@ class AboutScreen extends StatelessWidget {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.language,
-                        color: Color(0xFFADFF2F), size: 16),
+                    Icon(Icons.language, color: Color(0xFFADFF2F), size: 16),
                     SizedBox(width: 8),
                     Text(
                       'skyberrys.com',
@@ -1068,21 +1069,28 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
           final cleanupBonus = (_itemsCollected * 0.015).clamp(0.0, 0.30);
 
           const decay = 0.0005;
-          _felineCategory.level =
-              (_felineCategory.level - decay).clamp(0.1, 1.0);
-          _floorCategory.level =
-              (_floorCategory.level - decay).clamp(0.1, 1.0);
-          _splashCategory.level =
-              (_splashCategory.level - decay).clamp(0.1, 1.0);
-          _furnitureCategory.level =
-              (_furnitureCategory.level - decay).clamp(0.1, 1.0);
+          _felineCategory.level = (_felineCategory.level - decay).clamp(
+            0.1,
+            1.0,
+          );
+          _floorCategory.level = (_floorCategory.level - decay).clamp(0.1, 1.0);
+          _splashCategory.level = (_splashCategory.level - decay).clamp(
+            0.1,
+            1.0,
+          );
+          _furnitureCategory.level = (_furnitureCategory.level - decay).clamp(
+            0.1,
+            1.0,
+          );
 
           final count = _detectedObjects.length;
           if (count > 0) {
             final countBoost = (count * 0.025).clamp(0.0, 0.20);
             _floorCategory.level =
-                (_floorCategory.level + countBoost - cleanupBonus * 0.15)
-                    .clamp(0.1, 1.0);
+                (_floorCategory.level + countBoost - cleanupBonus * 0.15).clamp(
+                  0.1,
+                  1.0,
+                );
           }
 
           for (final obj in _detectedObjects) {
@@ -1157,14 +1165,17 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
           _celebrations[(_itemsCollected - 1) % _celebrations.length];
 
       const reduction = 0.06;
-      _floorCategory.level =
-          (_floorCategory.level - reduction).clamp(0.1, 1.0);
-      _felineCategory.level =
-          (_felineCategory.level - reduction * 0.4).clamp(0.1, 1.0);
-      _splashCategory.level =
-          (_splashCategory.level - reduction * 0.4).clamp(0.1, 1.0);
-      _furnitureCategory.level =
-          (_furnitureCategory.level - reduction * 0.4).clamp(0.1, 1.0);
+      _floorCategory.level = (_floorCategory.level - reduction).clamp(0.1, 1.0);
+      _felineCategory.level = (_felineCategory.level - reduction * 0.4).clamp(
+        0.1,
+        1.0,
+      );
+      _splashCategory.level = (_splashCategory.level - reduction * 0.4).clamp(
+        0.1,
+        1.0,
+      );
+      _furnitureCategory.level = (_furnitureCategory.level - reduction * 0.4)
+          .clamp(0.1, 1.0);
 
       _targetId = null;
       _targetRawLabel = null;
@@ -1191,8 +1202,9 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
               as RenderRepaintBoundary?;
       if (boundary == null) return;
       final ui.Image img = await boundary.toImage(pixelRatio: 2.0);
-      final ByteData? byteData =
-          await img.toByteData(format: ui.ImageByteFormat.png);
+      final ByteData? byteData = await img.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
       if (byteData == null) return;
       final tempDir = await getTemporaryDirectory();
       final file = File(
@@ -1355,7 +1367,9 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                                 shape: BoxShape.circle,
                                 color: Colors.white.withOpacity(0.08),
                                 border: Border.all(
-                                  color: const Color(0xFFADFF2F).withOpacity(0.4),
+                                  color: const Color(
+                                    0xFFADFF2F,
+                                  ).withOpacity(0.4),
                                   width: 1.5,
                                 ),
                               ),
@@ -1419,12 +1433,10 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                 ),
 
                 // Chaos meters (bottom-left)
-                Positioned(
-                    bottom: 170, left: 16, child: _buildChaosMeters()),
+                Positioned(bottom: 170, left: 16, child: _buildChaosMeters()),
 
                 // Grade badge (bottom-right)
-                Positioned(
-                    bottom: 165, right: 16, child: _buildGradeBadge()),
+                Positioned(bottom: 165, right: 16, child: _buildGradeBadge()),
 
                 // Debug label strip
                 if (_showDebugLabels)
@@ -1789,8 +1801,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
             color: cleanupColor.withOpacity(0.15),
             border: Border.all(color: cleanupColor, width: 3),
             boxShadow: [
-              BoxShadow(
-                  color: cleanupColor.withOpacity(0.4), blurRadius: 12),
+              BoxShadow(color: cleanupColor.withOpacity(0.4), blurRadius: 12),
             ],
           ),
           child: Column(
@@ -2044,7 +2055,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     final thresholds = [0, 1, 3, 7, 12, 20];
     final labels = ['F', 'D', 'C', 'B', 'A', 'S+'];
     int current = 0;
-    for (int i = 0; i < thresholds.length - 1; i++) {
+    for (int i = 0; i < thresholds.length; i++) {
       if (_itemsCollected >= thresholds[i]) current = i;
     }
 
@@ -2056,8 +2067,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
         ? 1.0
         : (_itemsCollected - currentThreshold) /
               (nextThreshold - currentThreshold);
-    final nextLabel =
-        current < labels.length - 1 ? labels[current + 1] : 'MAX';
+    final nextLabel = current < labels.length - 1 ? labels[current + 1] : 'MAX';
     final remaining = nextThreshold - _itemsCollected;
 
     return Container(
@@ -2085,8 +2095,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                 current >= thresholds.length - 1
                     ? 'MAX RANK!'
                     : '$remaining more to go!',
-                style:
-                    const TextStyle(color: Colors.white54, fontSize: 11),
+                style: const TextStyle(color: Colors.white54, fontSize: 11),
               ),
             ],
           ),
@@ -2259,14 +2268,18 @@ class PrankBoxPainter extends CustomPainter {
     canvas.drawLine(rect.topLeft, rect.topLeft.translate(0, len), paint);
     canvas.drawLine(rect.topRight, rect.topRight.translate(-len, 0), paint);
     canvas.drawLine(rect.topRight, rect.topRight.translate(0, len), paint);
+    canvas.drawLine(rect.bottomLeft, rect.bottomLeft.translate(len, 0), paint);
+    canvas.drawLine(rect.bottomLeft, rect.bottomLeft.translate(0, -len), paint);
     canvas.drawLine(
-        rect.bottomLeft, rect.bottomLeft.translate(len, 0), paint);
+      rect.bottomRight,
+      rect.bottomRight.translate(-len, 0),
+      paint,
+    );
     canvas.drawLine(
-        rect.bottomLeft, rect.bottomLeft.translate(0, -len), paint);
-    canvas.drawLine(
-        rect.bottomRight, rect.bottomRight.translate(-len, 0), paint);
-    canvas.drawLine(
-        rect.bottomRight, rect.bottomRight.translate(0, -len), paint);
+      rect.bottomRight,
+      rect.bottomRight.translate(0, -len),
+      paint,
+    );
   }
 
   @override

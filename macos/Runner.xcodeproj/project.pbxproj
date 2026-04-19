@@ -385,7 +385,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.skyberrys.howPrankedMyHouse.RunnerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.skyberrys.howpranked.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/how_pranked_my_house.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/how_pranked_my_house";
@@ -399,7 +399,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.skyberrys.howPrankedMyHouse.RunnerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.skyberrys.howpranked.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/how_pranked_my_house.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/how_pranked_my_house";
@@ -413,7 +413,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				GENERATE_INFOPLIST_FILE = YES;
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.skyberrys.howPrankedMyHouse.RunnerTests;
+				PRODUCT_BUNDLE_IDENTIFIER = com.skyberrys.howpranked.RunnerTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/how_pranked_my_house.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/how_pranked_my_house";

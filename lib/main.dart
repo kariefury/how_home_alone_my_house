@@ -721,6 +721,256 @@ class AboutScreen extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────
+// SPLASH / LOADING SCREEN
+// ─────────────────────────────────────────────────
+class _SplashScreen extends StatefulWidget {
+  const _SplashScreen();
+
+  @override
+  State<_SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<_SplashScreen>
+    with TickerProviderStateMixin {
+  static const List<_SplashMessage> _messages = [
+    _SplashMessage('🔍', 'Booting hazard scanner...'),
+    _SplashMessage('🧱', 'Counting LEGO bricks on floor...'),
+    _SplashMessage('🐱', 'Locating feline agents of chaos...'),
+    _SplashMessage('💦', 'Mapping splash zones...'),
+    _SplashMessage('🪑', 'Measuring shin-height furniture...'),
+    _SplashMessage('⚠️', 'Calibrating chaos detector...'),
+    _SplashMessage('👟', 'Scanning for rogue footwear...'),
+    _SplashMessage('🏠', 'Almost ready to prank-scan your house!'),
+  ];
+
+  int _msgIndex = 0;
+  late final AnimationController _scanController;
+  late final Animation<double> _scanAnimation;
+  late final AnimationController _fadeController;
+  late final Animation<double> _fadeAnimation;
+  late final AnimationController _pulseController;
+  late final Animation<double> _pulseAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Scan line sweeping up and down
+    _scanController = AnimationController(
+      duration: const Duration(milliseconds: 1800),
+      vsync: this,
+    )..repeat(reverse: true);
+    _scanAnimation =
+        Tween<double>(begin: 0.08, end: 0.92).animate(_scanController);
+
+    // Message fade in/out
+    _fadeController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    )..forward();
+    _fadeAnimation = CurvedAnimation(
+      parent: _fadeController,
+      curve: Curves.easeInOut,
+    );
+
+    // Logo glow pulse
+    _pulseController = AnimationController(
+      duration: const Duration(milliseconds: 1200),
+      vsync: this,
+    )..repeat(reverse: true);
+    _pulseAnimation = Tween<double>(begin: 0.4, end: 1.0).animate(
+      CurvedAnimation(parent: _pulseController, curve: Curves.easeInOut),
+    );
+
+    _scheduleNextMessage();
+  }
+
+  void _scheduleNextMessage() {
+    Future.delayed(const Duration(milliseconds: 1400), () {
+      if (!mounted) return;
+      _fadeController.reverse().then((_) {
+        if (!mounted) return;
+        setState(() {
+          _msgIndex = (_msgIndex + 1) % _messages.length;
+        });
+        _fadeController.forward();
+        _scheduleNextMessage();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _scanController.dispose();
+    _fadeController.dispose();
+    _pulseController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final msg = _messages[_msgIndex];
+    final size = MediaQuery.of(context).size;
+
+    return Scaffold(
+      backgroundColor: const Color(0xFF0A0A0A),
+      body: Stack(
+        children: [
+          // ── Scan line ──
+          AnimatedBuilder(
+            animation: _scanAnimation,
+            builder: (_, __) => Positioned(
+              top: size.height * _scanAnimation.value,
+              left: 0,
+              right: 0,
+              child: Container(
+                height: 2,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      const Color(0xFFADFF2F).withOpacity(0.5),
+                      const Color(0xFFADFF2F).withOpacity(0.85),
+                      const Color(0xFFADFF2F).withOpacity(0.5),
+                      Colors.transparent,
+                    ],
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFADFF2F).withOpacity(0.4),
+                      blurRadius: 18,
+                      spreadRadius: 4,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // ── Centre content ──
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Logo with pulsing glow
+                  AnimatedBuilder(
+                    animation: _pulseAnimation,
+                    builder: (_, __) => Container(
+                      width: 110,
+                      height: 110,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: const Color(0xFFADFF2F)
+                            .withOpacity(0.06 * _pulseAnimation.value),
+                        border: Border.all(
+                          color: const Color(0xFFADFF2F)
+                              .withOpacity(0.5 * _pulseAnimation.value),
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFFADFF2F)
+                                .withOpacity(0.30 * _pulseAnimation.value),
+                            blurRadius: 40,
+                            spreadRadius: 6,
+                          ),
+                        ],
+                      ),
+                      child: const Center(
+                        child: Text('🏠', style: TextStyle(fontSize: 50)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 28),
+
+                  // App title
+                  const Text(
+                    'HOW PRANKED MY HOUSE',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Color(0xFFADFF2F),
+                      fontSize: 16,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 2.0,
+                      shadows: [
+                        Shadow(blurRadius: 14, color: Color(0xFFADFF2F)),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'by skyberrys',
+                    style: TextStyle(
+                      color: Colors.white24,
+                      fontSize: 11,
+                      letterSpacing: 3,
+                    ),
+                  ),
+                  const SizedBox(height: 52),
+
+                  // Cycling message
+                  FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Column(
+                      children: [
+                        Text(
+                          msg.emoji,
+                          style: const TextStyle(fontSize: 32),
+                        ),
+                        const SizedBox(height: 10),
+                        Text(
+                          msg.label,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white60,
+                            fontSize: 14,
+                            letterSpacing: 0.4,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 36),
+
+                  // Progress bar dots
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(_messages.length, (i) {
+                      final active = i == _msgIndex;
+                      return AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+                        margin: const EdgeInsets.symmetric(horizontal: 3),
+                        width: active ? 20 : 6,
+                        height: 6,
+                        decoration: BoxDecoration(
+                          color: active
+                              ? const Color(0xFFADFF2F)
+                              : Colors.white12,
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                      );
+                    }),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SplashMessage {
+  final String emoji;
+  final String label;
+  const _SplashMessage(this.emoji, this.label);
+}
+
+// ─────────────────────────────────────────────────
 // MAIN SCREEN
 // ─────────────────────────────────────────────────
 class PrankScannerHome extends StatefulWidget {
@@ -1346,22 +1596,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
 
     // ── Loading state ──
     if (!_cameraReady) {
-      return const Scaffold(
-        backgroundColor: Color(0xFF0A0A0A),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              CircularProgressIndicator(color: Color(0xFFADFF2F)),
-              SizedBox(height: 16),
-              Text(
-                'INITIALIZING PRANK DETECTOR...',
-                style: TextStyle(color: Color(0xFFADFF2F)),
-              ),
-            ],
-          ),
-        ),
-      );
+      return const _SplashScreen();
     }
 
     final size = MediaQuery.of(context).size;

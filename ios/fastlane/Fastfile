@@ -1,0 +1,35 @@
+default_platform(:ios)
+
+# Locate the IPA produced by `flutter build ipa --release`.
+# Fastfile lives in ios/fastlane/, project root is two levels up.
+PROJECT_ROOT = File.expand_path("../..", __dir__)
+IPA_DIR      = File.join(PROJECT_ROOT, "build", "ios", "ipa")
+
+def latest_ipa
+  candidates = Dir[File.join(IPA_DIR, "*.ipa")].sort_by { |f| File.mtime(f) }
+  UI.user_error!("No IPA found in #{IPA_DIR}. Run `flutter build ipa --release` first (or use ./build_and_upload.sh).") if candidates.empty?
+  candidates.last
+end
+
+platform :ios do
+  desc "Upload the latest Flutter-built IPA to TestFlight / App Store Connect"
+  lane :release do
+    upload_to_testflight(
+      ipa: latest_ipa,
+      skip_waiting_for_build_processing: true,
+      skip_submission: true,
+    )
+  end
+
+  desc "Upload IPA and prepare for App Store review (does not auto-submit)"
+  lane :submit do
+    upload_to_app_store(
+      ipa: latest_ipa,
+      skip_screenshots: true,
+      skip_metadata: false,
+      submit_for_review: false, # flip to true when ready
+      precheck_include_in_app_purchases: false,
+      force: true,
+    )
+  end
+end

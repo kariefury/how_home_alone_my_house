@@ -1,0 +1,5 @@
+app_identifier("com.skyberrys.howpranked") # The bundle identifier of your app
+apple_id("carrie@skyberrys.com")                  # Your Apple Developer Portal username
+
+team_id("75CJ897K26")                              # Developer Portal Team ID
+# itc_team_id("")                                  # App Store Connect Team ID (uncomment & set if you belong to multiple ASC teams)

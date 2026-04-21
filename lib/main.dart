@@ -492,9 +492,7 @@ class AboutScreen extends StatelessWidget {
                 fontSize: 20,
                 fontWeight: FontWeight.w900,
                 letterSpacing: 1.5,
-                shadows: [
-                  Shadow(blurRadius: 16, color: Color(0xFFADFF2F)),
-                ],
+                shadows: [Shadow(blurRadius: 16, color: Color(0xFFADFF2F))],
               ),
             ),
             const SizedBox(height: 6),
@@ -555,11 +553,13 @@ class AboutScreen extends StatelessWidget {
             Container(
               height: 1,
               decoration: BoxDecoration(
-                gradient: LinearGradient(colors: [
-                  Colors.transparent,
-                  const Color(0xFFADFF2F).withOpacity(0.4),
-                  Colors.transparent,
-                ]),
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.transparent,
+                    const Color(0xFFADFF2F).withOpacity(0.4),
+                    Colors.transparent,
+                  ],
+                ),
               ),
             ),
             const SizedBox(height: 28),
@@ -606,8 +606,10 @@ class AboutScreen extends StatelessWidget {
                 );
               },
               child: Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: const Color(0xFFADFF2F).withOpacity(0.08),
                   borderRadius: BorderRadius.circular(24),
@@ -619,8 +621,7 @@ class AboutScreen extends StatelessWidget {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.language,
-                        color: Color(0xFFADFF2F), size: 16),
+                    Icon(Icons.language, color: Color(0xFFADFF2F), size: 16),
                     SizedBox(width: 8),
                     Text(
                       'skyberrys.com',
@@ -730,7 +731,7 @@ class PrankScannerHome extends StatefulWidget {
 
 class _PrankScannerHomeState extends State<PrankScannerHome>
     with SingleTickerProviderStateMixin, WidgetsBindingObserver {
-  late CameraController _cameraController;
+  CameraController? _cameraController;
   late AnimationController _scanController;
   late Animation<double> _scanAnimation;
   final GlobalKey _captureKey = GlobalKey();
@@ -741,6 +742,8 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
   bool _canProcess = false;
   bool _isBusy = false;
   bool _cameraReady = false;
+  bool _cameraError = false;
+  String _cameraErrorMessage = '';
   int _frameCount = 0;
 
   List<DetectedObject> _detectedObjects = [];
@@ -814,34 +817,85 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     ).animate(_scanController);
   }
 
+  // Derive the correct input image rotation from the camera's sensor orientation.
+  // This is important for iPad which can be used in multiple orientations and
+  // has different sensor orientations than iPhone.
+  InputImageRotation _rotationFromCamera(int sensorOrientation) {
+    switch (sensorOrientation) {
+      case 0:
+        return InputImageRotation.rotation0deg;
+      case 90:
+        return InputImageRotation.rotation90deg;
+      case 180:
+        return InputImageRotation.rotation180deg;
+      case 270:
+        return InputImageRotation.rotation270deg;
+      default:
+        return InputImageRotation.rotation90deg;
+    }
+  }
+
   Future<void> _initCamera() async {
+    // On some iPads the global _cameras list can be empty on first launch —
+    // try re-fetching before giving up.
     if (_cameras.isEmpty) {
-      debugPrint('No cameras available');
+      try {
+        _cameras = await availableCameras();
+      } catch (e) {
+        debugPrint('availableCameras retry error: $e');
+      }
+    }
+
+    if (_cameras.isEmpty) {
+      if (mounted) {
+        setState(() {
+          _cameraError = true;
+          _cameraErrorMessage =
+              'No camera found on this device.\n\nPlease grant camera permission in\nSettings → Privacy & Security → Camera.';
+        });
+      }
       return;
     }
+
     _cameraController = CameraController(
       _cameras[0],
       ResolutionPreset.medium,
       enableAudio: false,
+      imageFormatGroup: Platform.isIOS
+          ? ImageFormatGroup.bgra8888
+          : ImageFormatGroup.yuv420,
     );
+
     try {
-      await _cameraController.initialize();
+      await _cameraController!.initialize();
       if (!mounted) return;
-      await _cameraController.startImageStream(_processFrame);
-      setState(() => _cameraReady = true);
+      await _cameraController!.startImageStream(_processFrame);
+      setState(() {
+        _cameraReady = true;
+        _cameraError = false;
+      });
     } catch (e) {
       debugPrint('Camera init error: $e');
+      if (mounted) {
+        setState(() {
+          _cameraError = true;
+          _cameraErrorMessage =
+              'Camera could not be started.\n\nPlease check camera permissions in\nSettings → Privacy & Security → Camera.';
+        });
+      }
     }
   }
 
   Future<void> _disposeCamera() async {
     _canProcess = false;
     try {
-      if (_cameraController.value.isInitialized) {
-        if (_cameraController.value.isStreamingImages) {
-          await _cameraController.stopImageStream();
+      if (_cameraController != null &&
+          _cameraController!.value.isInitialized) {
+        if (_cameraController!.value.isStreamingImages) {
+          await _cameraController!.stopImageStream();
         }
-        await _cameraController.dispose();
+        await _cameraController!.dispose();
+        _cameraController = null;
       }
     } catch (e) {
       debugPrint('Camera dispose error: $e');
@@ -999,7 +1053,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
   }
 
   void _processFrame(CameraImage image) async {
-    if (!_canProcess || _isBusy) return;
+    if (!_canProcess || _isBusy || _cameras.isEmpty) return;
     _isBusy = true;
     _frameCount++;
 
@@ -1024,7 +1078,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
         bytes: bytes,
         metadata: InputImageMetadata(
           size: Size(image.width.toDouble(), image.height.toDouble()),
-          rotation: InputImageRotation.rotation90deg,
+          rotation: _rotationFromCamera(_cameras[0].sensorOrientation),
           format: format,
           bytesPerRow: image.planes[0].bytesPerRow,
         ),
@@ -1068,21 +1122,28 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
           final cleanupBonus = (_itemsCollected * 0.015).clamp(0.0, 0.30);
 
           const decay = 0.0005;
-          _felineCategory.level =
-              (_felineCategory.level - decay).clamp(0.1, 1.0);
-          _floorCategory.level =
-              (_floorCategory.level - decay).clamp(0.1, 1.0);
-          _splashCategory.level =
-              (_splashCategory.level - decay).clamp(0.1, 1.0);
-          _furnitureCategory.level =
-              (_furnitureCategory.level - decay).clamp(0.1, 1.0);
+          _felineCategory.level = (_felineCategory.level - decay).clamp(
+            0.1,
+            1.0,
+          );
+          _floorCategory.level = (_floorCategory.level - decay).clamp(0.1, 1.0);
+          _splashCategory.level = (_splashCategory.level - decay).clamp(
+            0.1,
+            1.0,
+          );
+          _furnitureCategory.level = (_furnitureCategory.level - decay).clamp(
+            0.1,
+            1.0,
+          );
 
           final count = _detectedObjects.length;
           if (count > 0) {
             final countBoost = (count * 0.025).clamp(0.0, 0.20);
             _floorCategory.level =
-                (_floorCategory.level + countBoost - cleanupBonus * 0.15)
-                    .clamp(0.1, 1.0);
+                (_floorCategory.level + countBoost - cleanupBonus * 0.15).clamp(
+                  0.1,
+                  1.0,
+                );
           }
 
           for (final obj in _detectedObjects) {
@@ -1157,14 +1218,17 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
           _celebrations[(_itemsCollected - 1) % _celebrations.length];
 
       const reduction = 0.06;
-      _floorCategory.level =
-          (_floorCategory.level - reduction).clamp(0.1, 1.0);
-      _felineCategory.level =
-          (_felineCategory.level - reduction * 0.4).clamp(0.1, 1.0);
-      _splashCategory.level =
-          (_splashCategory.level - reduction * 0.4).clamp(0.1, 1.0);
-      _furnitureCategory.level =
-          (_furnitureCategory.level - reduction * 0.4).clamp(0.1, 1.0);
+      _floorCategory.level = (_floorCategory.level - reduction).clamp(0.1, 1.0);
+      _felineCategory.level = (_felineCategory.level - reduction * 0.4).clamp(
+        0.1,
+        1.0,
+      );
+      _splashCategory.level = (_splashCategory.level - reduction * 0.4).clamp(
+        0.1,
+        1.0,
+      );
+      _furnitureCategory.level = (_furnitureCategory.level - reduction * 0.4)
+          .clamp(0.1, 1.0);
 
       _targetId = null;
       _targetRawLabel = null;
@@ -1191,8 +1255,9 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
               as RenderRepaintBoundary?;
       if (boundary == null) return;
       final ui.Image img = await boundary.toImage(pixelRatio: 2.0);
-      final ByteData? byteData =
-          await img.toByteData(format: ui.ImageByteFormat.png);
+      final ByteData? byteData = await img.toByteData(
+        format: ui.ImageByteFormat.png,
+      );
       if (byteData == null) return;
       final tempDir = await getTemporaryDirectory();
       final file = File(
@@ -1214,8 +1279,75 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
 
   @override
   Widget build(BuildContext context) {
+    // ── Camera error state — shown instead of infinite spinner ──
+    if (_cameraError) {
+      return Scaffold(
+        backgroundColor: const Color(0xFF0A0A0A),
+        body: Center(
+          child: Padding(
+            padding: const EdgeInsets.all(32),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('📷', style: TextStyle(fontSize: 64)),
+                const SizedBox(height: 24),
+                const Text(
+                  'CAMERA UNAVAILABLE',
+                  style: TextStyle(
+                    color: Color(0xFFADFF2F),
+                    fontSize: 18,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 2,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  _cameraErrorMessage,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Colors.white54,
+                    fontSize: 14,
+                    height: 1.6,
+                  ),
+                ),
+                const SizedBox(height: 32),
+                ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFADFF2F),
+                    foregroundColor: Colors.black,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 28, vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      _cameraError = false;
+                      _cameraErrorMessage = '';
+                    });
+                    _initCamera();
+                  },
+                  icon: const Icon(Icons.refresh_rounded),
+                  label: const Text(
+                    'TRY AGAIN',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    }
+
+    // ── Loading state ──
     if (!_cameraReady) {
       return const Scaffold(
+        backgroundColor: Color(0xFF0A0A0A),
         body: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -1249,9 +1381,9 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                   child: FittedBox(
                     fit: BoxFit.cover,
                     child: SizedBox(
-                      width: _cameraController.value.previewSize!.height,
-                      height: _cameraController.value.previewSize!.width,
-                      child: CameraPreview(_cameraController),
+                      width: _cameraController!.value.previewSize!.height,
+                      height: _cameraController!.value.previewSize!.width,
+                      child: CameraPreview(_cameraController!),
                     ),
                   ),
                 ),
@@ -1261,8 +1393,8 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                   painter: PrankBoxPainter(
                     objects: _detectedObjects,
                     imageSize: Size(
-                      _cameraController.value.previewSize!.height,
-                      _cameraController.value.previewSize!.width,
+                      _cameraController!.value.previewSize!.height,
+                      _cameraController!.value.previewSize!.width,
                     ),
                     widgetSize: size,
                     targetId: _targetId,
@@ -1355,7 +1487,9 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                                 shape: BoxShape.circle,
                                 color: Colors.white.withOpacity(0.08),
                                 border: Border.all(
-                                  color: const Color(0xFFADFF2F).withOpacity(0.4),
+                                  color: const Color(
+                                    0xFFADFF2F,
+                                  ).withOpacity(0.4),
                                   width: 1.5,
                                 ),
                               ),
@@ -1419,12 +1553,10 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                 ),
 
                 // Chaos meters (bottom-left)
-                Positioned(
-                    bottom: 170, left: 16, child: _buildChaosMeters()),
+                Positioned(bottom: 170, left: 16, child: _buildChaosMeters()),
 
                 // Grade badge (bottom-right)
-                Positioned(
-                    bottom: 165, right: 16, child: _buildGradeBadge()),
+                Positioned(bottom: 165, right: 16, child: _buildGradeBadge()),
 
                 // Debug label strip
                 if (_showDebugLabels)
@@ -1789,8 +1921,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
             color: cleanupColor.withOpacity(0.15),
             border: Border.all(color: cleanupColor, width: 3),
             boxShadow: [
-              BoxShadow(
-                  color: cleanupColor.withOpacity(0.4), blurRadius: 12),
+              BoxShadow(color: cleanupColor.withOpacity(0.4), blurRadius: 12),
             ],
           ),
           child: Column(
@@ -2044,7 +2175,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
     final thresholds = [0, 1, 3, 7, 12, 20];
     final labels = ['F', 'D', 'C', 'B', 'A', 'S+'];
     int current = 0;
-    for (int i = 0; i < thresholds.length - 1; i++) {
+    for (int i = 0; i < thresholds.length; i++) {
       if (_itemsCollected >= thresholds[i]) current = i;
     }
 
@@ -2056,8 +2187,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
         ? 1.0
         : (_itemsCollected - currentThreshold) /
               (nextThreshold - currentThreshold);
-    final nextLabel =
-        current < labels.length - 1 ? labels[current + 1] : 'MAX';
+    final nextLabel = current < labels.length - 1 ? labels[current + 1] : 'MAX';
     final remaining = nextThreshold - _itemsCollected;
 
     return Container(
@@ -2085,8 +2215,7 @@ class _PrankScannerHomeState extends State<PrankScannerHome>
                 current >= thresholds.length - 1
                     ? 'MAX RANK!'
                     : '$remaining more to go!',
-                style:
-                    const TextStyle(color: Colors.white54, fontSize: 11),
+                style: const TextStyle(color: Colors.white54, fontSize: 11),
               ),
             ],
           ),
@@ -2259,14 +2388,18 @@ class PrankBoxPainter extends CustomPainter {
     canvas.drawLine(rect.topLeft, rect.topLeft.translate(0, len), paint);
     canvas.drawLine(rect.topRight, rect.topRight.translate(-len, 0), paint);
     canvas.drawLine(rect.topRight, rect.topRight.translate(0, len), paint);
+    canvas.drawLine(rect.bottomLeft, rect.bottomLeft.translate(len, 0), paint);
+    canvas.drawLine(rect.bottomLeft, rect.bottomLeft.translate(0, -len), paint);
     canvas.drawLine(
-        rect.bottomLeft, rect.bottomLeft.translate(len, 0), paint);
+      rect.bottomRight,
+      rect.bottomRight.translate(-len, 0),
+      paint,
+    );
     canvas.drawLine(
-        rect.bottomLeft, rect.bottomLeft.translate(0, -len), paint);
-    canvas.drawLine(
-        rect.bottomRight, rect.bottomRight.translate(-len, 0), paint);
-    canvas.drawLine(
-        rect.bottomRight, rect.bottomRight.translate(0, -len), paint);
+      rect.bottomRight,
+      rect.bottomRight.translate(0, -len),
+      paint,
+    );
   }
 
   @override

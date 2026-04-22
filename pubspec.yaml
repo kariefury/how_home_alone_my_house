@@ -2,7 +2,7 @@ name: how_pranked_my_house
 description: "Scan your house for pranks, traps, and general chaos."
 publish_to: 'none'
 
-version: 1.0.0+1
+version: 1.0.0+3
 
 environment:
   sdk: ^3.10.4
